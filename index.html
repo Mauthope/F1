@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cronômetro com Armazenamento em SQL</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      max-width: 600px;
+      margin: 20px 0;
+      border: 1px solid #ccc;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .button-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .button-row>button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .button-row>button.start-btn {
+      background-color: #4CAF50;
+      color: #fff;
+    }
+
+    .button-row>button.stop-btn {
+      background-color: #4CAF50;
+      color: #fff;
+    }
+
+    .timer {
+      font-size: 20px;
+      margin: 0 20px;
+      width: 120px;
+      text-align: center;
+    }
+
+    #data-output {
+      margin-top: 20px;
+      width: 100%;
+      max-width: 600px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 8px;
+    }
+
+    #data-output table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    #data-output th,
+    #data-output td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: left;
+    }
+
+    #data-output th {
+      background-color: #eee;
+    }
+
+    #filters {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    #filters label {
+      margin: 5px 0;
+    }
+
+    #filters button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      margin-top: 10px;
+      transition: background-color 0.3s;
+    }
+
+    #filters button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Cronômetro de Operações</h1>
+  <div class="container">
+    <div class="column">
+      <!-- Botões Start e Stop com cronômetros -->
+      <div id="button-timer-rows">
+        <!-- Linhas de botões e cronômetros serão geradas aqui -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros para visualização dos dados -->
+  <div id="filters">
+    <label for="start-date">Data de Início:</label>
+    <input type="date" id="start-date">
+    <label for="end-date">Data de Fim:</label>
+    <input type="date" id="end-date">
+    <button id="view-data-button">Ver Dados Armazenados</button>
+  </div>
+
+  <!-- Botão para baixar os dados -->
+  <button id="download-data-button">Download Dados em CSV</button>
+
+  <div id="data-output">
+    <!-- Dados armazenados serão exibidos aqui -->
+  </div>
+
+  <script>
+    const numTimers = 5; // Número de cronômetros e botões
+    const timers = []; // Array para armazenar os cronômetros
+    let db; // Variável para o banco de dados
+
+    // Função para iniciar a IndexedDB
+    function initDB() {
+      let request = indexedDB.open('TimerDB', 1);
+
+      request.onupgradeneeded = function (event) {
+        db = event.target.result;
+        let store = db.createObjectStore('timers', { keyPath: 'id', autoIncrement: true });
+        store.createIndex('date', 'date', { unique: false });
+      };
+
+      request.onsuccess = function (event) {
+        db = event.target.result;
+      };
+
+      request.onerror = function (event) {
+        console.error('Erro ao iniciar o IndexedDB:', event.target.errorCode);
+      };
+    }
+
+    // Função para armazenar os dados no IndexedDB
+    function storeTimerData(timerData) {
+      let transaction = db.transaction(['timers'], 'readwrite');
+      let store = transaction.objectStore('timers');
+      let request = store.add(timerData);
+
+      request.onsuccess = function () {
+        console.log('Dados armazenados com sucesso:', timerData);
+      };
+
+      request.onerror = function (event) {
+        console.error('Erro ao armazenar dados:', event.target.errorCode);
+      };
+    }
+
+    // Função para acessar os dados armazenados no IndexedDB com filtro de data
+    function viewStoredData() {
+      let transaction = db.transaction(['timers'], 'readonly');
+      let store = transaction.objectStore('timers');
+      let request = store.getAll();
+
+      request.onsuccess = function (event) {
+        let data = event.target.result;
+        const startDate = new Date(document.getElementById('start-date').value);
+        const endDate = new Date(document.getElementById('end-date').value);
+        // Ajusta o endDate para incluir o fim do dia
+        endDate.setHours(23, 59, 59, 999);
+
+        if (startDate && endDate) {
+          data = data.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate >= startDate && itemDate <= endDate;
+          });
+        }
+        displayData(data);
+      };
+
+      request.onerror = function (event) {
+        console.error('Erro ao acessar dados:', event.target.errorCode);
+      };
+    }
+
+    // Função para exibir os dados na tela
+    function displayData(data) {
+      const output = document.getElementById('data-output');
+      if (data.length > 0) {
+        let html = '<table><tr><th>ID</th><th>Data</th><th>Botão</th><th>Tempo (min)</th></tr>';
+        data.forEach(item => {
+          const formattedDate = new Date(item.date).toLocaleString();
+          html += `<tr><td>${item.id}</td><td>${formattedDate}</td><td>${item.buttonName}</td><td>${(item.elapsedTime / 60000).toFixed(2)}</td></tr>`;
+        });
+        html += '</table>';
+        output.innerHTML = html;
+      } else {
+        output.innerHTML = '<p>Nenhum dado armazenado.</p>';
+      }
+    }
+
+    // Função para baixar os dados em formato CSV
+    function downloadDataAsCSV(data) {
+      let csvContent = "ID,Data,Botão,Tempo (min)\n";
+      data.forEach(item => {
+        const formattedDate = new Date(item.date).toLocaleString();
+        csvContent += `${item.id},"${formattedDate}",${item.buttonName},${(item.elapsedTime / 60000).toFixed(2)}\n`;
+      });
+      const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "dados_cronometros.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Função para iniciar o cronômetro
+    function startTimer(index) {
+      if (!timers[index].interval) {
+        timers[index].startTime = Date.now() - timers[index].elapsedTime;
+        timers[index].interval = setInterval(() => updateTimer(index), 1000);
+        document.getElementById(`start-${index}`).style.backgroundColor = 'red';
+        document.getElementById(`stop-${index}`).style.backgroundColor = 'red';
+      }
+    }
+
+    // Função para atualizar o cronômetro
+    function updateTimer(index) {
+      timers[index].elapsedTime = Date.now() - timers[index].startTime;
+      document.getElementById(`timer-${index}`).textContent = formatTime(timers[index].elapsedTime);
+    }
+
+    // Função para parar o cronômetro e resetá-lo
+    function stopTimer(index) {
+      if (timers[index].interval) {
+        clearInterval(timers[index].interval);
+        timers[index].interval = null;
+        const timerData = {
+          date: new Date(),
+          buttonName: `Botão ${index + 1}`,
+          elapsedTime: timers[index].elapsedTime
+        };
+        storeTimerData(timerData);
+        timers[index].elapsedTime = 0;
+        document.getElementById(`timer-${index}`).textContent = formatTime(timers[index].elapsedTime);
+        document.getElementById(`start-${index}`).style.backgroundColor = 'green';
+        document.getElementById(`stop-${index}`).style.backgroundColor = 'green';
+      }
+    }
+
+    // Função para formatar o tempo em minutos e segundos
+    function formatTime(time) {
+      const minutes = Math.floor(time / 60000);
+      const seconds = Math.floor((time % 60000) / 1000);
+      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    }
+
+    // Função para inicializar os botões e cronômetros na tela
+    function initializeTimers() {
+      const buttonTimerRows = document.getElementById('button-timer-rows');
+      for (let i = 0; i < numTimers; i++) {
+        const buttonRow = document.createElement('div');
+        buttonRow.classList.add('button-row');
+        buttonRow.innerHTML = `
+                    <button id="start-${i}" class="start-btn">Operação ${i + 1}</button>
+                    <span id="timer-${i}" class="timer">0:00</span>
+                    <button id="stop-${i}" class="stop-btn">Stop ${i + 1}</button>
+                `;
+        buttonTimerRows.appendChild(buttonRow);
+        timers.push({ elapsedTime: 0, interval: null });
+
+        document.getElementById(`start-${i}`).addEventListener('click', () => startTimer(i));
+        document.getElementById(`stop-${i}`).addEventListener('click', () => stopTimer(i));
+      }
+    }
+
+    document.getElementById('view-data-button').addEventListener('click', viewStoredData);
+    document.getElementById('download-data-button').addEventListener('click', () => {
+      let transaction = db.transaction(['timers'], 'readonly');
+      let store = transaction.objectStore('timers');
+      let request = store.getAll();
+
+      request.onsuccess = function (event) {
+        downloadDataAsCSV(event.target.result);
+      };
+    });
+
+    window.onload = function () {
+      initDB();
+      initializeTimers();
+    };
+  </script>
+</body>
+
+</html>
