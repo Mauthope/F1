@@ -61,6 +61,11 @@
       color: #fff;
     }
 
+    .button-row>button.atendimento-btn {
+      background-color: #4CAF50;
+      color: #fff;
+    }
+
     .timer {
       font-size: 20px;
       margin: 0 20px;
@@ -128,7 +133,7 @@
   <h1>Cronômetro de Operações</h1>
   <div class="container">
     <div class="column">
-      <!-- Botões Start e Stop com cronômetros -->
+      <!-- Botões Start, Atendimento e Stop com cronômetros -->
       <div id="button-timer-rows">
         <!-- Linhas de botões e cronômetros serão geradas aqui -->
       </div>
@@ -152,6 +157,7 @@
   </div>
 
   <script>
+    // Inicialização das variáveis globais
     const numTimers = 5; // Número de cronômetros e botões
     const timers = []; // Array para armazenar os cronômetros
     let db; // Variável para o banco de dados
@@ -221,10 +227,10 @@
     function displayData(data) {
       const output = document.getElementById('data-output');
       if (data.length > 0) {
-        let html = '<table><tr><th>ID</th><th>Data</th><th>Botão</th><th>Tempo (min)</th></tr>';
+        let html = '<table><tr><th>ID</th><th>Data</th><th>Botão</th><th>Tempo Primeiro Clique (min)</th><th>Tempo Segundo Clique (min)</th><th>Tempo Atendimento (min)</th></tr>';
         data.forEach(item => {
           const formattedDate = new Date(item.date).toLocaleString();
-          html += `<tr><td>${item.id}</td><td>${formattedDate}</td><td>${item.buttonName}</td><td>${(item.elapsedTime / 60000).toFixed(2)}</td></tr>`;
+          html += `<tr><td>${item.id}</td><td>${formattedDate}</td><td>${item.buttonName}</td><td>${(item.elapsedTimeFirstClick / 60000).toFixed(2)}</td><td>${(item.elapsedTimeSecondClick / 60000).toFixed(2)}</td><td>${(item.elapsedTimeAtendimentoClick / 60000).toFixed(2)}</td></tr>`;
         });
         html += '</table>';
         output.innerHTML = html;
@@ -235,10 +241,10 @@
 
     // Função para baixar os dados em formato CSV
     function downloadDataAsCSV(data) {
-      let csvContent = "ID,Data,Botão,Tempo (min)\n";
+      let csvContent = "ID,Data,Botão,Tempo Primeiro Clique (min),Tempo Segundo Clique (min),Tempo Atendimento (min)\n";
       data.forEach(item => {
         const formattedDate = new Date(item.date).toLocaleString();
-        csvContent += `${item.id},"${formattedDate}",${item.buttonName},${(item.elapsedTime / 60000).toFixed(2)}\n`;
+        csvContent += `${item.id},"${formattedDate}",${item.buttonName},${(item.elapsedTimeFirstClick / 60000).toFixed(2)},${(item.elapsedTimeSecondClick / 60000).toFixed(2)},${(item.elapsedTimeAtendimentoClick / 60000).toFixed(2)}\n`;
       });
       const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
       const link = document.createElement("a");
@@ -252,77 +258,134 @@
     // Função para iniciar o cronômetro
     function startTimer(index) {
       if (!timers[index].interval) {
-        timers[index].startTime = Date.now() - timers[index].elapsedTime;
-        timers[index].interval = setInterval(() => updateTimer(index), 1000);
-        document.getElementById(`start-${index}`).style.backgroundColor = 'red';
-        document.getElementById(`stop-${index}`).style.backgroundColor = 'red';
+        if (!timers[index].firstClickRecorded) {
+          timers[index].startTimeFirstClick = Date.now();
+          timers[index].buttonElement.style.backgroundColor = '#f44336'; // Muda a cor do botão Start para vermelho
+          timers[index].firstClickRecorded = true;
+        } else {
+          timers[index].startTimeSecondClick = Date.now();
+          timers[index].buttonElement.style.backgroundColor = '#008CBA'; // Muda a cor do botão Start para azul
+          timers[index].secondClickRecorded = true;
+        }
+
+        timers[index].interval = setInterval(() => {
+          const now = Date.now();
+          if (timers[index].secondClickRecorded) {
+            timers[index].elapsedTimeSecondClick = now - timers[index].startTimeSecondClick;
+            timers[index].timerElement.textContent = (timers[index].elapsedTimeSecondClick / 1000).toFixed(2) + ' s';
+          } else {
+            timers[index].elapsedTimeFirstClick = now - timers[index].startTimeFirstClick;
+            timers[index].timerElement.textContent = (timers[index].elapsedTimeFirstClick / 1000).toFixed(2) + ' s';
+          }
+        }, 100);
       }
     }
 
-    // Função para atualizar o cronômetro
-    function updateTimer(index) {
-      timers[index].elapsedTime = Date.now() - timers[index].startTime;
-      document.getElementById(`timer-${index}`).textContent = formatTime(timers[index].elapsedTime);
-    }
-
-    // Função para parar o cronômetro e resetá-lo
+    // Função para parar o cronômetro
     function stopTimer(index) {
-      if (timers[index].interval) {
-        clearInterval(timers[index].interval);
-        timers[index].interval = null;
-        const timerData = {
-          date: new Date(),
-          buttonName: `Botão ${index + 1}`,
-          elapsedTime: timers[index].elapsedTime
-        };
-        storeTimerData(timerData);
-        timers[index].elapsedTime = 0;
-        document.getElementById(`timer-${index}`).textContent = formatTime(timers[index].elapsedTime);
-        document.getElementById(`start-${index}`).style.backgroundColor = 'green';
-        document.getElementById(`stop-${index}`).style.backgroundColor = 'green';
-      }
-    }
+      clearInterval(timers[index].interval);
+      timers[index].interval = null;
+      timers[index].buttonElement.style.backgroundColor = '#4CAF50'; // Reseta a cor do botão Start para verde
+      timers[index].stopButtonElement.style.backgroundColor = '#4CAF50'; // Reseta a cor do botão Stop para verde
 
-    // Função para formatar o tempo em minutos e segundos
-    function formatTime(time) {
-      const minutes = Math.floor(time / 60000);
-      const seconds = Math.floor((time % 60000) / 1000);
-      return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    }
-
-    // Função para inicializar os botões e cronômetros na tela
-    function initializeTimers() {
-      const buttonTimerRows = document.getElementById('button-timer-rows');
-      for (let i = 0; i < numTimers; i++) {
-        const buttonRow = document.createElement('div');
-        buttonRow.classList.add('button-row');
-        buttonRow.innerHTML = `
-                    <button id="start-${i}" class="start-btn">Operação ${i + 1}</button>
-                    <span id="timer-${i}" class="timer">0:00</span>
-                    <button id="stop-${i}" class="stop-btn">Stop ${i + 1}</button>
-                `;
-        buttonTimerRows.appendChild(buttonRow);
-        timers.push({ elapsedTime: 0, interval: null });
-
-        document.getElementById(`start-${i}`).addEventListener('click', () => startTimer(i));
-        document.getElementById(`stop-${i}`).addEventListener('click', () => stopTimer(i));
-      }
-    }
-
-    document.getElementById('view-data-button').addEventListener('click', viewStoredData);
-    document.getElementById('download-data-button').addEventListener('click', () => {
-      let transaction = db.transaction(['timers'], 'readonly');
-      let store = transaction.objectStore('timers');
-      let request = store.getAll();
-
-      request.onsuccess = function (event) {
-        downloadDataAsCSV(event.target.result);
+      // Armazena os dados no IndexedDB
+      const timerData = {
+        date: new Date(),
+        buttonName: `Start ${index + 1}`,
+        elapsedTimeFirstClick: timers[index].elapsedTimeFirstClick,
+        elapsedTimeSecondClick: timers[index].elapsedTimeSecondClick || 0, // Se não houve segundo clique, registra 0
+        elapsedTimeAtendimentoClick: timers[index].elapsedTimeAtendimentoClick || 0 // Se não houve clique no botão Atendimento, registra 0
       };
-    });
+      storeTimerData(timerData);
 
+      // Reseta o cronômetro
+      timers[index].elapsedTimeFirstClick = 0;
+      timers[index].elapsedTimeSecondClick = 0;
+      timers[index].elapsedTimeAtendimentoClick = 0;
+      timers[index].firstClickRecorded = false;
+      timers[index].secondClickRecorded = false;
+      timers[index].timerElement.textContent = '0.00 s';
+    }
+
+    // Função para iniciar o cronômetro de atendimento
+    function atendimentoTimer(index) {
+      const now = Date.now();
+      timers[index].startTimeAtendimentoClick = now;
+      timers[index].buttonAtendimentoElement.style.backgroundColor = '#008CBA'; // Muda a cor do botão Atendimento para azul
+      timers[index].interval = setInterval(() => {
+        timers[index].elapsedTimeAtendimentoClick = Date.now() - timers[index].startTimeAtendimentoClick;
+        timers[index].timerElement.textContent = (timers[index].elapsedTimeAtendimentoClick / 1000).toFixed(2) + ' s';
+      }, 100);
+    }
+
+    // Função para criar os botões, cronômetros e eventos
+    function createButtonTimerRows() {
+      const container = document.getElementById('button-timer-rows');
+      for (let i = 0; i < numTimers; i++) {
+        const row = document.createElement('div');
+        row.className = 'button-row';
+
+        const startButton = document.createElement('button');
+        startButton.className = 'start-btn';
+        startButton.textContent = `Start ${i + 1}`;
+        startButton.addEventListener('click', () => startTimer(i));
+
+        const atendimentoButton = document.createElement('button');
+        atendimentoButton.className = 'atendimento-btn';
+        atendimentoButton.textContent = `Atendimento ${i + 1}`;
+        atendimentoButton.addEventListener('click', () => atendimentoTimer(i));
+
+        const stopButton = document.createElement('button');
+        stopButton.className = 'stop-btn';
+        stopButton.textContent = `Stop ${i + 1}`;
+        stopButton.addEventListener('click', () => stopTimer(i));
+
+        const timerDisplay = document.createElement('div');
+        timerDisplay.className = 'timer';
+        timerDisplay.textContent = '0.00 s';
+
+        row.appendChild(startButton);
+        row.appendChild(atendimentoButton);
+        row.appendChild(timerDisplay);
+        row.appendChild(stopButton);
+        container.appendChild(row);
+
+        timers.push({
+          startTimeFirstClick: 0,
+          startTimeSecondClick: 0,
+          startTimeAtendimentoClick: 0,
+          elapsedTimeFirstClick: 0,
+          elapsedTimeSecondClick: 0,
+          elapsedTimeAtendimentoClick: 0,
+          interval: null,
+          firstClickRecorded: false,
+          secondClickRecorded: false,
+          buttonElement: startButton,
+          buttonAtendimentoElement: atendimentoButton,
+          stopButtonElement: stopButton,
+          timerElement: timerDisplay
+        });
+      }
+    }
+
+    // Inicializa a aplicação
     window.onload = function () {
       initDB();
-      initializeTimers();
+      createButtonTimerRows();
+      document.getElementById('view-data-button').addEventListener('click', viewStoredData);
+      document.getElementById('download-data-button').addEventListener('click', function () {
+        let transaction = db.transaction(['timers'], 'readonly');
+        let store = transaction.objectStore('timers');
+        let request = store.getAll();
+
+        request.onsuccess = function (event) {
+          downloadDataAsCSV(event.target.result);
+        };
+
+        request.onerror = function (event) {
+          console.error('Erro ao acessar dados:', event.target.errorCode);
+        };
+      });
     };
   </script>
 </body>
