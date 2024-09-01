@@ -133,7 +133,7 @@
   <h1>Cronômetro de Operações</h1>
   <div class="container">
     <div class="column">
-      <!-- Botões Start, Atendimento e Stop com cronômetros -->
+      <!-- Botões Start e Stop com cronômetro na tela -->
       <div id="button-timer-rows">
         <!-- Linhas de botões e cronômetros serão geradas aqui -->
       </div>
@@ -227,10 +227,10 @@
     function displayData(data) {
       const output = document.getElementById('data-output');
       if (data.length > 0) {
-        let html = '<table><tr><th>ID</th><th>Data</th><th>Botão</th><th>Tempo Primeiro Clique (min)</th><th>Tempo Segundo Clique (min)</th><th>Tempo Atendimento (min)</th></tr>';
+        let html = '<table><tr><th>ID</th><th>Data</th><th>Botão</th><th>Tempo Start (min)</th><th>Tempo Atendimento (min)</th></tr>';
         data.forEach(item => {
           const formattedDate = new Date(item.date).toLocaleString();
-          html += `<tr><td>${item.id}</td><td>${formattedDate}</td><td>${item.buttonName}</td><td>${(item.elapsedTimeFirstClick / 60000).toFixed(2)}</td><td>${(item.elapsedTimeSecondClick / 60000).toFixed(2)}</td><td>${(item.elapsedTimeAtendimentoClick / 60000).toFixed(2)}</td></tr>`;
+          html += `<tr><td>${item.id}</td><td>${formattedDate}</td><td>${item.buttonName}</td><td>${(item.elapsedTimeStart / 60000).toFixed(2)}</td><td>${(item.elapsedTimeAtendimento / 60000).toFixed(2)}</td></tr>`;
         });
         html += '</table>';
         output.innerHTML = html;
@@ -241,10 +241,10 @@
 
     // Função para baixar os dados em formato CSV
     function downloadDataAsCSV(data) {
-      let csvContent = "ID,Data,Botão,Tempo Primeiro Clique (min),Tempo Segundo Clique (min),Tempo Atendimento (min)\n";
+      let csvContent = "ID,Data,Botão,Tempo Start (min),Tempo Atendimento (min)\n";
       data.forEach(item => {
         const formattedDate = new Date(item.date).toLocaleString();
-        csvContent += `${item.id},"${formattedDate}",${item.buttonName},${(item.elapsedTimeFirstClick / 60000).toFixed(2)},${(item.elapsedTimeSecondClick / 60000).toFixed(2)},${(item.elapsedTimeAtendimentoClick / 60000).toFixed(2)}\n`;
+        csvContent += `${item.id},"${formattedDate}",${item.buttonName},${(item.elapsedTimeStart / 60000).toFixed(2)},${(item.elapsedTimeAtendimento / 60000).toFixed(2)}\n`;
       });
       const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
       const link = document.createElement("a");
@@ -255,70 +255,46 @@
       document.body.removeChild(link);
     }
 
-    // Função para iniciar o cronômetro
+    // Função para iniciar o cronômetro do Start
     function startTimer(index) {
-      if (!timers[index].interval) {
-        if (!timers[index].firstClickRecorded) {
-          timers[index].startTimeFirstClick = Date.now();
-          timers[index].buttonElement.style.backgroundColor = '#f44336'; // Muda a cor do botão Start para vermelho
-          timers[index].firstClickRecorded = true;
-        } else {
-          timers[index].startTimeSecondClick = Date.now();
-          timers[index].buttonElement.style.backgroundColor = '#008CBA'; // Muda a cor do botão Start para azul
-          timers[index].secondClickRecorded = true;
-        }
-
+      if (timers[index].interval === null) {
+        timers[index].startTimeStart = Date.now();
+        timers[index].buttonElement.style.backgroundColor = '#f44336'; // Muda a cor do botão Start para vermelho
         timers[index].interval = setInterval(() => {
           const now = Date.now();
-          if (timers[index].secondClickRecorded) {
-            timers[index].elapsedTimeSecondClick = now - timers[index].startTimeSecondClick;
-            timers[index].timerElement.textContent = (timers[index].elapsedTimeSecondClick / 1000).toFixed(2) + ' s';
-          } else {
-            timers[index].elapsedTimeFirstClick = now - timers[index].startTimeFirstClick;
-            timers[index].timerElement.textContent = (timers[index].elapsedTimeFirstClick / 1000).toFixed(2) + ' s';
-          }
+          timers[index].elapsedTimeStart = now - timers[index].startTimeStart;
+          timers[index].timerElement.textContent = (timers[index].elapsedTimeStart / 1000).toFixed(2) + ' s';
         }, 100);
       }
     }
 
-    // Função para parar o cronômetro
+    // Função para iniciar o cronômetro do Atendimento
+    function atendimentoTimer(index) {
+      timers[index].startTimeAtendimento = Date.now();
+      timers[index].buttonAtendimentoElement.style.backgroundColor = '#008CBA'; // Muda a cor do botão Atendimento para azul
+    }
+
+    // Função para parar ambos os cronômetros
     function stopTimer(index) {
       clearInterval(timers[index].interval);
       timers[index].interval = null;
       timers[index].buttonElement.style.backgroundColor = '#4CAF50'; // Reseta a cor do botão Start para verde
+      timers[index].buttonAtendimentoElement.style.backgroundColor = '#4CAF50'; // Reseta a cor do botão Atendimento para verde
       timers[index].stopButtonElement.style.backgroundColor = '#4CAF50'; // Reseta a cor do botão Stop para verde
 
-      // Armazena os dados no IndexedDB
       const timerData = {
         date: new Date(),
         buttonName: `Start ${index + 1}`,
-        elapsedTimeFirstClick: timers[index].elapsedTimeFirstClick,
-        elapsedTimeSecondClick: timers[index].elapsedTimeSecondClick || 0, // Se não houve segundo clique, registra 0
-        elapsedTimeAtendimentoClick: timers[index].elapsedTimeAtendimentoClick || 0 // Se não houve clique no botão Atendimento, registra 0
+        elapsedTimeStart: timers[index].elapsedTimeStart || 0,
+        elapsedTimeAtendimento: Date.now() - timers[index].startTimeAtendimento || 0
       };
       storeTimerData(timerData);
 
-      // Reseta o cronômetro
-      timers[index].elapsedTimeFirstClick = 0;
-      timers[index].elapsedTimeSecondClick = 0;
-      timers[index].elapsedTimeAtendimentoClick = 0;
-      timers[index].firstClickRecorded = false;
-      timers[index].secondClickRecorded = false;
+      timers[index].elapsedTimeStart = 0;
+      timers[index].elapsedTimeAtendimento = 0;
       timers[index].timerElement.textContent = '0.00 s';
     }
 
-    // Função para iniciar o cronômetro de atendimento
-    function atendimentoTimer(index) {
-      const now = Date.now();
-      timers[index].startTimeAtendimentoClick = now;
-      timers[index].buttonAtendimentoElement.style.backgroundColor = '#008CBA'; // Muda a cor do botão Atendimento para azul
-      timers[index].interval = setInterval(() => {
-        timers[index].elapsedTimeAtendimentoClick = Date.now() - timers[index].startTimeAtendimentoClick;
-        timers[index].timerElement.textContent = (timers[index].elapsedTimeAtendimentoClick / 1000).toFixed(2) + ' s';
-      }, 100);
-    }
-
-    // Função para criar os botões, cronômetros e eventos
     function createButtonTimerRows() {
       const container = document.getElementById('button-timer-rows');
       for (let i = 0; i < numTimers; i++) {
@@ -351,15 +327,11 @@
         container.appendChild(row);
 
         timers.push({
-          startTimeFirstClick: 0,
-          startTimeSecondClick: 0,
-          startTimeAtendimentoClick: 0,
-          elapsedTimeFirstClick: 0,
-          elapsedTimeSecondClick: 0,
-          elapsedTimeAtendimentoClick: 0,
+          startTimeStart: 0,
+          startTimeAtendimento: 0,
+          elapsedTimeStart: 0,
+          elapsedTimeAtendimento: 0,
           interval: null,
-          firstClickRecorded: false,
-          secondClickRecorded: false,
           buttonElement: startButton,
           buttonAtendimentoElement: atendimentoButton,
           stopButtonElement: stopButton,
@@ -368,7 +340,6 @@
       }
     }
 
-    // Inicializa a aplicação
     window.onload = function () {
       initDB();
       createButtonTimerRows();
