@@ -297,13 +297,26 @@
 
     function createButtonTimerRows() {
       const container = document.getElementById('button-timer-rows');
-      for (let i = 0; i < numTimers; i++) {
+
+      // Array com os nomes dos botões
+      const buttonNames = [
+        'EXTRUS.- ABASTEC. SILO',
+        'EXTRUS.- ABASTEC. RECUPERADO',
+        'EXTRUS.- ABASTEC. TUBETES',
+        'EXTRUS. RETIRADA DE MATERIAL EXTRUSORAS',
+        'ALÇA - PALET/BAG CHEIO',
+        'ALÇA - GAIOLA VAZIA',
+        'ALÇA - PALETES VAZIOS'
+      ];
+
+      for (let i = 0; i < buttonNames.length; i++) {
         const row = document.createElement('div');
         row.className = 'button-row';
 
+        // Botão "Start" com nome específico
         const startButton = document.createElement('button');
         startButton.className = 'start-btn';
-        startButton.textContent = `Start ${i + 1}`;
+        startButton.textContent = buttonNames[i]; // Usa o nome específico do botão
         startButton.addEventListener('click', () => startTimer(i));
 
         const atendimentoButton = document.createElement('button');
