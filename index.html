@@ -9,7 +9,6 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         header {
@@ -25,23 +24,6 @@
             padding: 20px;
             border: 1px solid #ddd;
             background: #f9f9f9;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
         }
 
         #generated-page {
@@ -63,13 +45,9 @@
         }
 
         .section {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 20px;
-            padding: 10px;
             border: 1px dashed #aaa;
-            background: #f3f3f3;
+            padding: 10px;
+            margin-bottom: 20px;
             position: relative;
         }
 
@@ -77,75 +55,63 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 10px;
-            width: 100%;
-            background: #f3f3f3;
+            text-align: center;
         }
 
         .section-content {
             display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
             flex-wrap: wrap;
+            position: relative;
         }
 
-        .section-content img,
-        .section-content video {
+        .section-content img {
             max-width: 8cm;
             max-height: 8cm;
+            margin-right: 10px;
             object-fit: contain;
             border: 1px solid #ddd;
-            cursor: pointer;
         }
 
         .text-box {
-            width: auto;
-            max-width: 8cm;
-            min-height: 50px;
             border: 1px dashed #ccc;
             padding: 5px;
-            resize: vertical;
+            margin: 5px 0;
             word-wrap: break-word;
             overflow: hidden;
             white-space: pre-wrap;
-            box-sizing: border-box;
-            display: inline-block;
-            vertical-align: top;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .button-container button {
-            background: none;
-            border: 1px dashed #aaa;
-            padding: 5px 10px;
-            cursor: pointer;
-            color: #555;
-        }
-
-        .button-container button:hover {
-            background: #ddd;
-        }
-
-        .button-container button:active {
-            background: #bbb;
+            min-height: 20px;
+            resize: vertical;
         }
 
         .arrow {
             position: absolute;
             width: 2px;
             background: black;
+            transform-origin: 0 0;
             z-index: 10;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .button-container button {
+            padding: 10px 20px;
+            background: none;
+            border: 1px solid #aaa;
+            cursor: pointer;
+        }
+
+        .button-container button:hover {
+            background: #ddd;
         }
 
         @media print {
             button {
-                display: none !important;
+                display: none;
             }
 
             #generated-page {
@@ -160,60 +126,22 @@
 </header>
 
 <div class="container">
-    <div class="form-group">
-        <label for="title">Título:</label>
-        <input type="text" id="title" placeholder="Digite o título">
-    </div>
-
-    <div class="form-group">
-        <label for="responsible">Responsável:</label>
-        <input type="text" id="responsible" placeholder="Digite o responsável">
-    </div>
-
-    <div class="form-group">
-        <label for="date">Data:</label>
-        <input type="date" id="date">
-    </div>
-
-    <button onclick="generatePage()">Gerar Página</button>
+    <button onclick="addSection()">Adicionar Sessão</button>
+    <button onclick="addArrow()">Adicionar Seta</button>
 </div>
 
 <div id="generated-page">
     <div class="header-info">
-        <div id="header-title"></div>
-        <div id="header-responsible"></div>
-        <div id="header-date"></div>
+        <div id="header-title">Título: Exemplo</div>
+        <div id="header-responsible">Responsável: Exemplo</div>
+        <div id="header-date">Data: 2024-11-25</div>
     </div>
     <div id="content"></div>
 </div>
 
-<div class="button-container">
-    <button onclick="addSection()">Adicionar Sessão</button>
-    <button onclick="addText()">Adicionar Texto</button>
-    <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="addArrow()">Adicionar Seta</button>
-</div>
-
 <script>
-    let startArrow = null;
     let isDrawingArrow = false;
-
-    function generatePage() {
-        const title = document.getElementById('title').value;
-        const responsible = document.getElementById('responsible').value;
-        const date = document.getElementById('date').value;
-
-        if (!title || !responsible || !date) {
-            alert("Por favor, preencha todas as informações!");
-            return;
-        }
-
-        document.getElementById('header-title').textContent = "Título: " + title;
-        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
-
-        document.getElementById('generated-page').style.display = "block";
-    }
+    let startArrowPoint = null;
 
     function addSection() {
         const content = document.getElementById('content');
@@ -221,9 +149,10 @@
         const section = document.createElement('div');
         section.classList.add('section');
 
-        const sectionTitle = document.createElement('input');
-        sectionTitle.placeholder = 'Título da Sessão';
+        const sectionTitle = document.createElement('div');
         sectionTitle.classList.add('section-title');
+        sectionTitle.contentEditable = "true";
+        sectionTitle.textContent = "Título da Sessão";
         section.appendChild(sectionTitle);
 
         const sectionContent = document.createElement('div');
@@ -231,18 +160,27 @@
         section.appendChild(sectionContent);
 
         content.appendChild(section);
+
+        // Adicionar funcionalidades específicas para texto e imagem na sessão
+        const textButton = document.createElement('button');
+        textButton.textContent = "Adicionar Texto";
+        textButton.onclick = () => addText(sectionContent);
+        section.appendChild(textButton);
+
+        const imageButton = document.createElement('button');
+        imageButton.textContent = "Adicionar Imagem";
+        imageButton.onclick = () => addImage(sectionContent);
+        section.appendChild(imageButton);
     }
 
-    function addText() {
-        const section = document.querySelector('.section:last-child .section-content');
+    function addText(sectionContent) {
         const textBox = document.createElement('div');
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
-        section.appendChild(textBox);
+        sectionContent.appendChild(textBox);
     }
 
-    function addImage() {
-        const section = document.querySelector('.section:last-child .section-content');
+    function addImage(sectionContent) {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -251,46 +189,43 @@
             if (file) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
-                section.appendChild(img);
+                sectionContent.appendChild(img);
             }
         };
         input.click();
     }
 
     function addArrow() {
-        const section = document.querySelector('.section:last-child');
-        section.onclick = (e) => {
+        const content = document.getElementById('content');
+        content.onclick = (e) => {
             if (isDrawingArrow) {
-                const endX = e.clientX - section.getBoundingClientRect().left;
-                const endY = e.clientY - section.getBoundingClientRect().top;
-                drawArrow(startArrow, endX, endY);
+                const endPoint = { x: e.offsetX, y: e.offsetY };
+                drawArrow(startArrowPoint, endPoint, content);
                 isDrawingArrow = false;
             } else {
-                startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
+                startArrowPoint = { x: e.offsetX, y: e.offsetY };
                 isDrawingArrow = true;
             }
         };
     }
 
-    function drawArrow(start, endX, endY) {
-        const section = document.querySelector('.section:last-child');
+    function drawArrow(start, end, container) {
         const arrow = document.createElement('div');
         arrow.classList.add('arrow');
 
-        const startX = start.x;
-        const startY = start.y;
+        const deltaX = end.x - start.x;
+        const deltaY = end.y - start.y;
+        const length = Math.sqrt(deltaX ** 2 + deltaY ** 2);
+        const angle = Math.atan2(deltaY, deltaX);
 
-        const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-        const angle = Math.atan2(endY - startY, endX - startX);
-
-        arrow.style.top = startY + "px";
-        arrow.style.left = startX + "px";
-        arrow.style.height = length + "px";
+        arrow.style.width = length + "px";
+        arrow.style.height = "2px";
+        arrow.style.left = start.x + "px";
+        arrow.style.top = start.y + "px";
         arrow.style.transform = `rotate(${angle}rad)`;
 
-        section.appendChild(arrow);
+        container.appendChild(arrow);
     }
 </script>
-
 </body>
 </html>
