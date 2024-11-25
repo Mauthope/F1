@@ -83,9 +83,11 @@
 
         .section-content {
             display: flex;
-            flex-wrap: wrap;
-            width: 100%;
+            flex-direction: row;
+            align-items: flex-start;
             gap: 10px;
+            width: 100%;
+            flex-wrap: wrap;
         }
 
         .section-content img,
@@ -195,7 +197,7 @@
 <script>
     let startArrow = null;
     let isDrawingArrow = false;
-    let imageAlignRight = false;
+    let currentSection = null;
 
     function generatePage() {
         const title = document.getElementById('title').value;
@@ -219,6 +221,8 @@
 
         const section = document.createElement('div');
         section.classList.add('section');
+        section.classList.add('active-section');
+        section.setAttribute('data-layout', 'horizontal');  // Horizontal layout by default
 
         const sectionTitle = document.createElement('input');
         sectionTitle.placeholder = 'Título da Sessão';
@@ -230,18 +234,19 @@
         section.appendChild(sectionContent);
 
         content.appendChild(section);
+        currentSection = section;
     }
 
     function addText() {
-        const section = document.querySelector('.section:last-child .section-content');
+        const sectionContent = currentSection.querySelector('.section-content');
         const textBox = document.createElement('div');
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
-        section.appendChild(textBox);
+        sectionContent.appendChild(textBox);
     }
 
     function addImage() {
-        const section = document.querySelector('.section:last-child .section-content');
+        const sectionContent = currentSection.querySelector('.section-content');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -250,21 +255,38 @@
             if (file) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
-                img.classList.add(imageAlignRight ? 'image-right' : 'image-left');
-                section.appendChild(img);
+                sectionContent.appendChild(img);
+                arrangeElements(sectionContent); // Reorganize the layout
             }
         };
         input.click();
     }
 
+    function arrangeElements(sectionContent) {
+        const layout = sectionContent.parentElement.getAttribute('data-layout');
+        const images = sectionContent.querySelectorAll('img');
+        const texts = sectionContent.querySelectorAll('.text-box');
+
+        if (layout === 'horizontal') {
+            // Images and text in a horizontal layout
+            images.forEach(img => img.style.flex = '0 1 8cm');
+            texts.forEach(text => text.style.flex = '1');
+        } else {
+            // Images and text in a vertical layout
+            images.forEach(img => img.style.flex = '1 1 100%');
+            texts.forEach(text => text.style.flex = '1 1 100%');
+        }
+    }
+
     function addArrow() {
-        const section = document.querySelector('.section:last-child');
+        const section = currentSection;
         section.onclick = (e) => {
             if (isDrawingArrow) {
                 const endX = e.clientX - section.getBoundingClientRect().left;
                 const endY = e.clientY - section.getBoundingClientRect().top;
-                drawArrow(startArrow, endX, endY);
+                drawArrow(startArrow.x, startArrow.y, endX, endY);
                 isDrawingArrow = false;
+                startArrow = null;
             } else {
                 startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
                 isDrawingArrow = true;
@@ -272,29 +294,24 @@
         };
     }
 
-    function drawArrow(start, endX, endY) {
-        const section = document.querySelector('.section:last-child');
+    function drawArrow(startX, startY, endX, endY) {
+        const section = currentSection;
         const arrow = document.createElement('div');
         arrow.classList.add('arrow');
 
-        const startX = start.x;
-        const startY = start.y;
+        const dx = endX - startX;
+        const dy = endY - startY;
 
-        const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-        const angle = Math.atan2(endY - startY, endX - startX);
+        const angle = Math.atan2(dy, dx);
+        const length = Math.sqrt(dx * dx + dy * dy);
 
-        arrow.style.top = startY + "px";
-        arrow.style.left = startX + "px";
-        arrow.style.height = length + "px";
+        arrow.style.height = `${length}px`;
         arrow.style.transform = `rotate(${angle}rad)`;
+        arrow.style.top = `${startY}px`;
+        arrow.style.left = `${startX}px`;
 
         section.appendChild(arrow);
     }
-
-    function toggleImageAlign() {
-        imageAlignRight = !imageAlignRight;
-    }
 </script>
-
 </body>
 </html>
