@@ -270,11 +270,31 @@
             if (file) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
+                img.onload = function() {
+                    img.style.maxWidth = '8cm'; // Ensures that image width does not exceed 8cm
+                    column1.appendChild(img);
+                    adjustTextAlignment();
+                };
                 img.onclick = () => img.remove(); // Delete image on click
-                column1.appendChild(img);
             }
         };
         input.click();
+    }
+
+    function adjustTextAlignment() {
+        const column2 = currentSection.querySelector('#column2');
+        const images = currentSection.querySelectorAll('#column1 img');
+        const lastImage = images[images.length - 1];
+
+        // Adjust text boxes so that they align with the height of the last image
+        const textBoxes = column2.querySelectorAll('.text-box');
+        if (lastImage) {
+            const imageHeight = lastImage.offsetHeight;
+
+            textBoxes.forEach(textBox => {
+                textBox.style.marginTop = `${imageHeight + 10}px`;
+            });
+        }
     }
 
     function addArrow() {
@@ -284,27 +304,24 @@
                 point1 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
             } else {
                 const point2 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-                drawArrow(point1.x, point1.y, point2.x, point2.y);
-                point1 = null; // Reset after drawing
+                drawArrow(point1, point2);
+                point1 = null;
             }
         };
     }
 
-    function drawArrow(startX, startY, endX, endY) {
+    function drawArrow(point1, point2) {
         const section = currentSection;
         const arrow = document.createElement('div');
+        const dx = point2.x - point1.x;
+        const dy = point2.y - point1.y;
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
         arrow.classList.add('arrow');
-
-        const dx = endX - startX;
-        const dy = endY - startY;
-
-        const angle = Math.atan2(dy, dx);
-        const length = Math.sqrt(dx * dx + dy * dy);
-
-        arrow.style.height = `${length}px`;
-        arrow.style.transform = `rotate(${angle}rad)`;
-        arrow.style.top = `${startY}px`;
-        arrow.style.left = `${startX}px`;
+        arrow.style.height = Math.sqrt(dx * dx + dy * dy) + 'px';
+        arrow.style.transform = `rotate(${angle}deg)`;
+        arrow.style.top = point1.y + 'px';
+        arrow.style.left = point1.x + 'px';
 
         section.appendChild(arrow);
     }
