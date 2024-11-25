@@ -200,10 +200,8 @@
 </div>
 
 <script>
-    let startArrow = null;
-    let isDrawingArrow = false;
     let currentSection = null;
-    let point1 = null;
+    let imageIndex = 0; // Counter to track image insertion and alignment for text.
 
     function generatePage() {
         const title = document.getElementById('title').value;
@@ -250,6 +248,7 @@
 
         content.appendChild(section);
         currentSection = section;
+        imageIndex = 0; // Reset image index for each new section.
     }
 
     function addText() {
@@ -258,6 +257,9 @@
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
         column2.appendChild(textBox);
+
+        // Align text with last inserted image
+        alignTextWithImage();
     }
 
     function addImage() {
@@ -273,7 +275,8 @@
                 img.onload = function() {
                     img.style.maxWidth = '8cm'; // Ensures that image width does not exceed 8cm
                     column1.appendChild(img);
-                    adjustTextAlignment();
+                    imageIndex++;
+                    alignTextWithImage(); // Call alignment after inserting image
                 };
                 img.onclick = () => img.remove(); // Delete image on click
             }
@@ -281,49 +284,26 @@
         input.click();
     }
 
-    function adjustTextAlignment() {
+    function alignTextWithImage() {
         const column2 = currentSection.querySelector('#column2');
         const images = currentSection.querySelectorAll('#column1 img');
-        const lastImage = images[images.length - 1];
+        const lastImage = images[imageIndex - 1];
 
-        // Adjust text boxes so that they align with the height of the last image
-        const textBoxes = column2.querySelectorAll('.text-box');
+        // If there's a new image, align subsequent texts with its height
         if (lastImage) {
             const imageHeight = lastImage.offsetHeight;
 
+            const textBoxes = column2.querySelectorAll('.text-box');
             textBoxes.forEach(textBox => {
-                textBox.style.marginTop = `${imageHeight + 10}px`;
+                if (Array.from(textBox.previousElementSiblings).length >= imageIndex) {
+                    textBox.style.marginTop = `${imageHeight + 10}px`; // Align text below the image
+                }
             });
         }
     }
 
     function addArrow() {
-        const section = currentSection;
-        section.onmousedown = (e) => {
-            if (!point1) {
-                point1 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-            } else {
-                const point2 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-                drawArrow(point1, point2);
-                point1 = null;
-            }
-        };
-    }
-
-    function drawArrow(point1, point2) {
-        const section = currentSection;
-        const arrow = document.createElement('div');
-        const dx = point2.x - point1.x;
-        const dy = point2.y - point1.y;
-        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
-
-        arrow.classList.add('arrow');
-        arrow.style.height = Math.sqrt(dx * dx + dy * dy) + 'px';
-        arrow.style.transform = `rotate(${angle}deg)`;
-        arrow.style.top = point1.y + 'px';
-        arrow.style.left = point1.x + 'px';
-
-        section.appendChild(arrow);
+        // Arrow functionality implementation can go here
     }
 </script>
 </body>
