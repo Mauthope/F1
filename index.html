@@ -63,9 +63,6 @@
         }
 
         .section {
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
             margin-bottom: 20px;
             padding: 10px;
             border: 1px dashed #aaa;
@@ -77,8 +74,11 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 10px;
-            width: 100%;
             background: #f3f3f3;
+            text-align: center;
+            width: 100%;
+            border-bottom: 1px dashed #ccc;
+            padding: 10px 0;
         }
 
         .section-content {
@@ -140,9 +140,16 @@
             background: #bbb;
         }
 
-        .arrow {
+        .drawing-area {
+            width: 100%;
+            height: 200px;
+            border: 1px solid #ccc;
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .drawing-line {
             position: absolute;
-            width: 2px;
             background: black;
             z-index: 10;
         }
@@ -195,12 +202,12 @@
     <button onclick="addSection()">Adicionar Sessão</button>
     <button onclick="addText()">Adicionar Texto</button>
     <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="addArrow()">Adicionar Seta</button>
+    <button onclick="startDrawing()">Começar a Desenhar</button>
 </div>
 
 <script>
-    let startArrow = null;
-    let isDrawingArrow = false;
+    let drawing = false;
+    let currentLine = null;
     let currentSection = null;
 
     function generatePage() {
@@ -225,12 +232,10 @@
 
         const section = document.createElement('div');
         section.classList.add('section');
-        section.classList.add('active-section');
-        section.setAttribute('data-layout', 'horizontal');  // Horizontal layout by default
 
-        const sectionTitle = document.createElement('input');
-        sectionTitle.placeholder = 'Título da Sessão';
+        const sectionTitle = document.createElement('div');
         sectionTitle.classList.add('section-title');
+        sectionTitle.textContent = "Título da Sessão";
         section.appendChild(sectionTitle);
 
         const sectionContent = document.createElement('div');
@@ -247,8 +252,8 @@
         sectionContent.appendChild(column2);
 
         section.appendChild(sectionContent);
-
         content.appendChild(section);
+
         currentSection = section;
     }
 
@@ -277,43 +282,35 @@
         input.click();
     }
 
-    function addArrow() {
-        const section = currentSection;
-        section.onmousedown = (e) => {
-            startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-            isDrawingArrow = true;
+    function startDrawing() {
+        const drawingArea = document.createElement('div');
+        drawingArea.classList.add('drawing-area');
+        currentSection.appendChild(drawingArea);
+
+        drawingArea.onmousedown = (e) => {
+            drawing = true;
+            currentLine = document.createElement('div');
+            currentLine.classList.add('drawing-line');
+            currentLine.style.top = `${e.offsetY}px`;
+            currentLine.style.left = `${e.offsetX}px`;
+            drawingArea.appendChild(currentLine);
         };
 
-        section.onmousemove = (e) => {
-            if (isDrawingArrow && startArrow) {
-                drawArrow(startArrow.x, startArrow.y, e.clientX - section.getBoundingClientRect().left, e.clientY - section.getBoundingClientRect().top);
+        drawingArea.onmousemove = (e) => {
+            if (drawing && currentLine) {
+                const width = e.offsetX - parseInt(currentLine.style.left);
+                const height = e.offsetY - parseInt(currentLine.style.top);
+                currentLine.style.width = `${Math.sqrt(width * width + height * height)}px`;
+                currentLine.style.transform = `rotate(${Math.atan2(height, width)}rad)`;
             }
         };
 
-        section.onmouseup = () => {
-            isDrawingArrow = false;
-            startArrow = null;
+        drawingArea.onmouseup = () => {
+            drawing = false;
+            currentLine = null;
         };
     }
-
-    function drawArrow(startX, startY, endX, endY) {
-        const section = currentSection;
-        const arrow = document.createElement('div');
-        arrow.classList.add('arrow');
-
-        const dx = endX - startX;
-        const dy = endY - startY;
-
-        const angle = Math.atan2(dy, dx);
-        const length = Math.sqrt(dx * dx + dy * dy);
-
-        arrow.style.height = `${length}px`;
-        arrow.style.transform = `rotate(${angle}rad)`;
-        arrow.style.top = `${startY}px`;
-        arrow.style.left = `${startX}px`;
-
-        section.appendChild(arrow);
-    }
 </script>
+
 </body>
 </html>
