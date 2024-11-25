@@ -83,11 +83,9 @@
 
         .section-content {
             display: flex;
-            flex-direction: row;
-            align-items: flex-start;
-            gap: 10px;
-            width: 100%;
             flex-wrap: wrap;
+            width: 100%;
+            gap: 10px;
         }
 
         .section-content img,
@@ -100,7 +98,7 @@
         }
 
         .text-box {
-            width: auto;
+            width: 100%;
             max-width: 8cm;
             min-height: 50px;
             border: 1px dashed #ccc;
@@ -197,6 +195,7 @@
 <script>
     let startArrow = null;
     let isDrawingArrow = false;
+    let imageAlignRight = false;
 
     function generatePage() {
         const title = document.getElementById('title').value;
@@ -234,19 +233,15 @@
     }
 
     function addText() {
-        const sectionContent = document.querySelector('.section:last-child .section-content');
+        const section = document.querySelector('.section:last-child .section-content');
         const textBox = document.createElement('div');
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
-        sectionContent.appendChild(textBox);
-        
-        // Ajusta a altura automaticamente para o texto inserido
-        textBox.style.height = 'auto';
-        textBox.style.minHeight = `${textBox.scrollHeight}px`;
+        section.appendChild(textBox);
     }
 
     function addImage() {
-        const sectionContent = document.querySelector('.section:last-child .section-content');
+        const section = document.querySelector('.section:last-child .section-content');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -255,7 +250,8 @@
             if (file) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
-                sectionContent.appendChild(img);
+                img.classList.add(imageAlignRight ? 'image-right' : 'image-left');
+                section.appendChild(img);
             }
         };
         input.click();
@@ -293,6 +289,10 @@
         arrow.style.transform = `rotate(${angle}rad)`;
 
         section.appendChild(arrow);
+    }
+
+    function toggleImageAlign() {
+        imageAlignRight = !imageAlignRight;
     }
 </script>
 
