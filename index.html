@@ -80,7 +80,7 @@
 
         .section-content {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
         }
 
@@ -93,16 +93,27 @@
             cursor: pointer;
         }
 
-        .section-content p {
-            width: calc(100% - 8cm);
-            word-wrap: break-word;
-            border: 1px solid #ddd;
-            margin: 0;
+        .text-box {
+            width: 8cm;
+            min-height: 50px;
+            border: 1px dashed #ccc;
             padding: 5px;
+            resize: vertical;
+            word-wrap: break-word;
+            overflow: hidden;
+            white-space: pre-wrap;
             box-sizing: border-box;
+            display: inline-block;
+            vertical-align: top;
         }
 
-        button {
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .button-container button {
             background: none;
             border: 1px dashed #aaa;
             padding: 5px 10px;
@@ -110,16 +121,12 @@
             color: #555;
         }
 
-        button:hover {
+        .button-container button:hover {
             background: #ddd;
         }
 
-        button:active {
+        .button-container button:active {
             background: #bbb;
-        }
-
-        .ghost {
-            display: inline-block;
         }
 
         .arrow {
@@ -171,7 +178,13 @@
         <div id="header-date"></div>
     </div>
     <div id="content"></div>
-    <button class="ghost" onclick="addSection()">Adicionar Sessão</button>
+</div>
+
+<div class="button-container">
+    <button onclick="addSection()">Adicionar Sessão</button>
+    <button onclick="addText()">Adicionar Texto</button>
+    <button onclick="addImage()">Adicionar Imagem</button>
+    <button onclick="addArrow()">Adicionar Seta</button>
 </div>
 
 <script>
@@ -208,45 +221,38 @@
 
         const sectionContent = document.createElement('div');
         sectionContent.classList.add('section-content');
+        section.appendChild(sectionContent);
 
-        const addText = document.createElement('button');
-        addText.classList.add('ghost');
-        addText.textContent = "Adicionar Texto";
-        addText.onclick = () => {
-            const text = prompt("Digite o texto:");
-            if (text) {
-                const paragraph = document.createElement('p');
-                paragraph.textContent = text;
-                sectionContent.appendChild(paragraph);
+        content.appendChild(section);
+    }
+
+    function addText() {
+        const section = document.querySelector('.section:last-child .section-content');
+        const textBox = document.createElement('div');
+        textBox.classList.add('text-box');
+        textBox.contentEditable = "true";
+        section.appendChild(textBox);
+    }
+
+    function addImage() {
+        const section = document.querySelector('.section:last-child .section-content');
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = () => {
+            const file = input.files[0];
+            if (file) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                section.appendChild(img);
             }
         };
+        input.click();
+    }
 
-        const addImage = document.createElement('button');
-        addImage.classList.add('ghost');
-        addImage.textContent = "Adicionar Imagem";
-        addImage.onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = () => {
-                const file = input.files[0];
-                if (file) {
-                    const img = document.createElement('img');
-                    img.src = URL.createObjectURL(file);
-                    img.onclick = () => {
-                        const newSrc = prompt('Digite a URL da nova imagem:', img.src);
-                        if (newSrc) img.src = newSrc;
-                    };
-                    sectionContent.appendChild(img);
-                }
-            };
-            input.click();
-        };
-
-        const addArrow = document.createElement('button');
-        addArrow.classList.add('ghost');
-        addArrow.textContent = "Adicionar Seta";
-        addArrow.onclick = (e) => {
+    function addArrow() {
+        const section = document.querySelector('.section:last-child');
+        section.onclick = (e) => {
             if (isDrawingArrow) {
                 const endX = e.clientX - section.getBoundingClientRect().left;
                 const endY = e.clientY - section.getBoundingClientRect().top;
@@ -257,17 +263,10 @@
                 isDrawingArrow = true;
             }
         };
-
-        sectionContent.appendChild(addText);
-        sectionContent.appendChild(addImage);
-        sectionContent.appendChild(addArrow);
-        section.appendChild(sectionContent);
-
-        content.appendChild(section);
     }
 
     function drawArrow(start, endX, endY) {
-        const section = document.querySelector('.section');
+        const section = document.querySelector('.section:last-child');
         const arrow = document.createElement('div');
         arrow.classList.add('arrow');
 
