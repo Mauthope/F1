@@ -125,6 +125,7 @@
             white-space: pre-wrap;
             box-sizing: border-box;
             display: inline-block;
+            cursor: move;
         }
 
         .button-container {
@@ -289,8 +290,36 @@
         mediaItem.appendChild(textElement);
         generatedContent.appendChild(mediaItem);
 
+        // Habilitar a funcionalidade de mover as caixas de texto
+        enableDragAndDrop();
+
         // Exibe a página gerada
         document.getElementById('generated-page').style.display = 'block';
+    }
+
+    // Função para permitir arrastar as caixas de texto
+    function enableDragAndDrop() {
+        const textElements = document.querySelectorAll('.media-text');
+
+        textElements.forEach(textElement => {
+            textElement.addEventListener('mousedown', function(e) {
+                const textBox = e.target;
+                const offsetY = e.clientY - textBox.getBoundingClientRect().top;
+                
+                function onMouseMove(event) {
+                    textBox.style.position = 'absolute';
+                    textBox.style.top = (event.clientY - offsetY) + 'px';
+                }
+
+                function onMouseUp() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        });
     }
 </script>
 
