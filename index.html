@@ -9,6 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         header {
@@ -24,6 +25,23 @@
             padding: 20px;
             border: 1px solid #ddd;
             background: #f9f9f9;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
         #generated-page {
@@ -45,9 +63,13 @@
         }
 
         .section {
-            border: 1px dashed #aaa;
-            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
             margin-bottom: 20px;
+            padding: 10px;
+            border: 1px dashed #aaa;
+            background: #f3f3f3;
             position: relative;
         }
 
@@ -55,63 +77,75 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 10px;
-            text-align: center;
+            width: 100%;
+            background: #f3f3f3;
         }
 
         .section-content {
             display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            gap: 10px;
+            width: 100%;
             flex-wrap: wrap;
-            position: relative;
         }
 
-        .section-content img {
+        .section-content img,
+        .section-content video {
             max-width: 8cm;
             max-height: 8cm;
-            margin-right: 10px;
             object-fit: contain;
             border: 1px solid #ddd;
+            cursor: pointer;
         }
 
         .text-box {
+            width: auto;
+            max-width: 8cm;
+            min-height: 50px;
             border: 1px dashed #ccc;
             padding: 5px;
-            margin: 5px 0;
+            resize: vertical;
             word-wrap: break-word;
             overflow: hidden;
             white-space: pre-wrap;
-            min-height: 20px;
-            resize: vertical;
-        }
-
-        .arrow {
-            position: absolute;
-            width: 2px;
-            background: black;
-            transform-origin: 0 0;
-            z-index: 10;
+            box-sizing: border-box;
+            display: inline-block;
+            vertical-align: top;
         }
 
         .button-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .button-container button {
-            padding: 10px 20px;
             background: none;
-            border: 1px solid #aaa;
+            border: 1px dashed #aaa;
+            padding: 5px 10px;
             cursor: pointer;
+            color: #555;
         }
 
         .button-container button:hover {
             background: #ddd;
         }
 
+        .button-container button:active {
+            background: #bbb;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 2px;
+            background: black;
+            z-index: 10;
+        }
+
         @media print {
             button {
-                display: none;
+                display: none !important;
             }
 
             #generated-page {
@@ -126,22 +160,60 @@
 </header>
 
 <div class="container">
-    <button onclick="addSection()">Adicionar Sessão</button>
-    <button onclick="addArrow()">Adicionar Seta</button>
+    <div class="form-group">
+        <label for="title">Título:</label>
+        <input type="text" id="title" placeholder="Digite o título">
+    </div>
+
+    <div class="form-group">
+        <label for="responsible">Responsável:</label>
+        <input type="text" id="responsible" placeholder="Digite o responsável">
+    </div>
+
+    <div class="form-group">
+        <label for="date">Data:</label>
+        <input type="date" id="date">
+    </div>
+
+    <button onclick="generatePage()">Gerar Página</button>
 </div>
 
 <div id="generated-page">
     <div class="header-info">
-        <div id="header-title">Título: Exemplo</div>
-        <div id="header-responsible">Responsável: Exemplo</div>
-        <div id="header-date">Data: 2024-11-25</div>
+        <div id="header-title"></div>
+        <div id="header-responsible"></div>
+        <div id="header-date"></div>
     </div>
     <div id="content"></div>
 </div>
 
+<div class="button-container">
+    <button onclick="addSection()">Adicionar Sessão</button>
+    <button onclick="addText()">Adicionar Texto</button>
+    <button onclick="addImage()">Adicionar Imagem</button>
+    <button onclick="addArrow()">Adicionar Seta</button>
+</div>
+
 <script>
+    let startArrow = null;
     let isDrawingArrow = false;
-    let startArrowPoint = null;
+
+    function generatePage() {
+        const title = document.getElementById('title').value;
+        const responsible = document.getElementById('responsible').value;
+        const date = document.getElementById('date').value;
+
+        if (!title || !responsible || !date) {
+            alert("Por favor, preencha todas as informações!");
+            return;
+        }
+
+        document.getElementById('header-title').textContent = "Título: " + title;
+        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
+
+        document.getElementById('generated-page').style.display = "block";
+    }
 
     function addSection() {
         const content = document.getElementById('content');
@@ -149,10 +221,9 @@
         const section = document.createElement('div');
         section.classList.add('section');
 
-        const sectionTitle = document.createElement('div');
+        const sectionTitle = document.createElement('input');
+        sectionTitle.placeholder = 'Título da Sessão';
         sectionTitle.classList.add('section-title');
-        sectionTitle.contentEditable = "true";
-        sectionTitle.textContent = "Título da Sessão";
         section.appendChild(sectionTitle);
 
         const sectionContent = document.createElement('div');
@@ -160,27 +231,22 @@
         section.appendChild(sectionContent);
 
         content.appendChild(section);
-
-        // Adicionar funcionalidades específicas para texto e imagem na sessão
-        const textButton = document.createElement('button');
-        textButton.textContent = "Adicionar Texto";
-        textButton.onclick = () => addText(sectionContent);
-        section.appendChild(textButton);
-
-        const imageButton = document.createElement('button');
-        imageButton.textContent = "Adicionar Imagem";
-        imageButton.onclick = () => addImage(sectionContent);
-        section.appendChild(imageButton);
     }
 
-    function addText(sectionContent) {
+    function addText() {
+        const sectionContent = document.querySelector('.section:last-child .section-content');
         const textBox = document.createElement('div');
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
         sectionContent.appendChild(textBox);
+        
+        // Ajusta a altura automaticamente para o texto inserido
+        textBox.style.height = 'auto';
+        textBox.style.minHeight = `${textBox.scrollHeight}px`;
     }
 
-    function addImage(sectionContent) {
+    function addImage() {
+        const sectionContent = document.querySelector('.section:last-child .section-content');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -196,36 +262,39 @@
     }
 
     function addArrow() {
-        const content = document.getElementById('content');
-        content.onclick = (e) => {
+        const section = document.querySelector('.section:last-child');
+        section.onclick = (e) => {
             if (isDrawingArrow) {
-                const endPoint = { x: e.offsetX, y: e.offsetY };
-                drawArrow(startArrowPoint, endPoint, content);
+                const endX = e.clientX - section.getBoundingClientRect().left;
+                const endY = e.clientY - section.getBoundingClientRect().top;
+                drawArrow(startArrow, endX, endY);
                 isDrawingArrow = false;
             } else {
-                startArrowPoint = { x: e.offsetX, y: e.offsetY };
+                startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
                 isDrawingArrow = true;
             }
         };
     }
 
-    function drawArrow(start, end, container) {
+    function drawArrow(start, endX, endY) {
+        const section = document.querySelector('.section:last-child');
         const arrow = document.createElement('div');
         arrow.classList.add('arrow');
 
-        const deltaX = end.x - start.x;
-        const deltaY = end.y - start.y;
-        const length = Math.sqrt(deltaX ** 2 + deltaY ** 2);
-        const angle = Math.atan2(deltaY, deltaX);
+        const startX = start.x;
+        const startY = start.y;
 
-        arrow.style.width = length + "px";
-        arrow.style.height = "2px";
-        arrow.style.left = start.x + "px";
-        arrow.style.top = start.y + "px";
+        const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        const angle = Math.atan2(endY - startY, endX - startX);
+
+        arrow.style.top = startY + "px";
+        arrow.style.left = startX + "px";
+        arrow.style.height = length + "px";
         arrow.style.transform = `rotate(${angle}rad)`;
 
-        container.appendChild(arrow);
+        section.appendChild(arrow);
     }
 </script>
+
 </body>
 </html>
