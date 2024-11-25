@@ -69,12 +69,25 @@
             padding: 10px;
             border: 1px dashed #aaa;
             background: #f3f3f3;
+            position: relative;
         }
 
         .section-content img, .section-content video {
-            max-width: 150px;
-            margin-bottom: 10px;
+            width: 8cm;
+            height: 8cm;
+            object-fit: contain;
+            border: 1px solid #ddd;
             display: block;
+        }
+
+        .section-content p {
+            width: 8cm;
+            word-wrap: break-word;
+            text-align: center;
+            border: 1px solid #ddd;
+            margin: 0;
+            padding: 5px;
+            box-sizing: border-box;
         }
 
         button {
@@ -95,6 +108,13 @@
 
         .ghost {
             display: inline-block;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 2px;
+            background: black;
+            z-index: 10;
         }
 
         @media print {
@@ -139,6 +159,7 @@
         <div id="header-date"></div>
     </div>
     <div id="content"></div>
+    <button class="ghost" onclick="addSection()">Adicionar Sessão</button>
 </div>
 
 <script>
@@ -157,7 +178,6 @@
         document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
         document.getElementById('generated-page').style.display = "block";
-        addSection();
     }
 
     function addSection() {
@@ -196,35 +216,26 @@
             input.click();
         };
 
-        const addVideo = document.createElement('button');
-        addVideo.classList.add('ghost');
-        addVideo.textContent = "Adicionar Vídeo";
-        addVideo.onclick = () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'video/*';
-            input.onchange = () => {
-                const file = input.files[0];
-                if (file) {
-                    const video = document.createElement('video');
-                    video.src = URL.createObjectURL(file);
-                    video.controls = true;
-                    section.appendChild(video);
-                }
-            };
-            input.click();
-        };
-
         const addArrow = document.createElement('button');
         addArrow.classList.add('ghost');
         addArrow.textContent = "Adicionar Seta";
         addArrow.onclick = () => {
-            alert("Conexão entre pontos não implementada.");
+            const startX = prompt("X inicial:");
+            const startY = prompt("Y inicial:");
+            const endX = prompt("X final:");
+            const endY = prompt("Y final:");
+
+            const arrow = document.createElement('div');
+            arrow.classList.add('arrow');
+            arrow.style.top = `${startY}px`;
+            arrow.style.left = `${startX}px`;
+            arrow.style.height = `${Math.sqrt((endX - startX) ** 2 + (endY - startY) ** 2)}px`;
+            arrow.style.transform = `rotate(${Math.atan2(endY - startY, endX - startX)}rad)`;
+            section.appendChild(arrow);
         };
 
         section.appendChild(addText);
         section.appendChild(addImage);
-        section.appendChild(addVideo);
         section.appendChild(addArrow);
 
         content.appendChild(section);
