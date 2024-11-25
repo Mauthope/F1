@@ -64,8 +64,7 @@
 
         .section {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row;
             margin-bottom: 20px;
             padding: 10px;
             border: 1px dashed #aaa;
@@ -84,10 +83,18 @@
         .section-content {
             display: flex;
             flex-direction: row;
-            align-items: flex-start;
             gap: 10px;
             width: 100%;
             flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .column {
+            flex: 1;
+            min-width: 8cm;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .section-content img,
@@ -222,7 +229,6 @@
         const section = document.createElement('div');
         section.classList.add('section');
         section.classList.add('active-section');
-        section.setAttribute('data-layout', 'horizontal');  // Horizontal layout by default
 
         const sectionTitle = document.createElement('input');
         sectionTitle.placeholder = 'Título da Sessão';
@@ -231,22 +237,32 @@
 
         const sectionContent = document.createElement('div');
         sectionContent.classList.add('section-content');
-        section.appendChild(sectionContent);
 
+        const column1 = document.createElement('div');
+        column1.classList.add('column');
+        sectionContent.appendChild(column1);
+
+        const column2 = document.createElement('div');
+        column2.classList.add('column');
+        sectionContent.appendChild(column2);
+
+        section.appendChild(sectionContent);
         content.appendChild(section);
         currentSection = section;
     }
 
     function addText() {
         const sectionContent = currentSection.querySelector('.section-content');
+        const column2 = sectionContent.children[1];
         const textBox = document.createElement('div');
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
-        sectionContent.appendChild(textBox);
+        column2.appendChild(textBox);
     }
 
     function addImage() {
         const sectionContent = currentSection.querySelector('.section-content');
+        const column1 = sectionContent.children[0];
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -255,27 +271,15 @@
             if (file) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
-                sectionContent.appendChild(img);
-                arrangeElements(sectionContent); // Reorganize the layout
+                img.onclick = () => removeImage(img); // Allows image to be removed
+                column1.appendChild(img);
             }
         };
         input.click();
     }
 
-    function arrangeElements(sectionContent) {
-        const layout = sectionContent.parentElement.getAttribute('data-layout');
-        const images = sectionContent.querySelectorAll('img');
-        const texts = sectionContent.querySelectorAll('.text-box');
-
-        if (layout === 'horizontal') {
-            // Images and text in a horizontal layout
-            images.forEach(img => img.style.flex = '0 1 8cm');
-            texts.forEach(text => text.style.flex = '1');
-        } else {
-            // Images and text in a vertical layout
-            images.forEach(img => img.style.flex = '1 1 100%');
-            texts.forEach(text => text.style.flex = '1 1 100%');
-        }
+    function removeImage(img) {
+        img.remove(); // Remove image from the column
     }
 
     function addArrow() {
