@@ -85,7 +85,15 @@
 
         .section-content {
             display: flex;
+            flex-direction: column;
             gap: 10px;
+        }
+
+        .section-row {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            width: 100%;
         }
 
         .section-column {
@@ -148,6 +156,39 @@
             z-index: 10;
         }
 
+        .media-item {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .media-item img,
+        .media-item video {
+            max-width: 8cm;
+            max-height: 8cm;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .media-text {
+            flex: 1;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            min-height: 50px;
+            resize: vertical;
+            word-wrap: break-word;
+            overflow: hidden;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+
+        .media-item-left {
+            flex-direction: row-reverse;
+        }
+
         @media print {
             button {
                 display: none !important;
@@ -177,134 +218,81 @@
 
     <div class="form-group">
         <label for="date">Data:</label>
-        <input type="date" id="date">
+        <input type="text" id="date" placeholder="Digite a data">
     </div>
 
-    <button onclick="generatePage()">Gerar Página</button>
+    <div class="form-group">
+        <label for="image-upload">Imagem:</label>
+        <input type="file" id="image-upload" accept="image/*">
+    </div>
+
+    <div class="form-group">
+        <label for="image-alignment">Alinhamento do texto:</label>
+        <select id="image-alignment">
+            <option value="left">À esquerda</option>
+            <option value="right">À direita</option>
+            <option value="bottom">Abaixo</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="text-input">Texto:</label>
+        <textarea id="text-input" placeholder="Digite o texto"></textarea>
+    </div>
+
+    <div class="button-container">
+        <button onclick="generatePage()">Gerar Página</button>
+    </div>
 </div>
 
 <div id="generated-page">
     <div class="header-info">
-        <div id="header-title"></div>
-        <div id="header-responsible"></div>
-        <div id="header-date"></div>
+        <strong>Título:</strong> <span id="generated-title"></span><br>
+        <strong>Responsável:</strong> <span id="generated-responsible"></span><br>
+        <strong>Data:</strong> <span id="generated-date"></span>
     </div>
-    <div id="content"></div>
-</div>
-
-<div class="button-container">
-    <button onclick="addSection()">Adicionar Sessão</button>
-    <button onclick="addText()">Adicionar Texto</button>
-    <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="addArrow()">Adicionar Seta</button>
+    <div id="generated-content"></div>
 </div>
 
 <script>
-    let currentSection = null;
-    let imageIndex = 0; // Counter to track image insertion and alignment for text.
-
     function generatePage() {
+        // Coleta as informações do formulário
         const title = document.getElementById('title').value;
         const responsible = document.getElementById('responsible').value;
         const date = document.getElementById('date').value;
+        const text = document.getElementById('text-input').value;
+        const alignment = document.getElementById('image-alignment').value;
+        const imageInput = document.getElementById('image-upload');
+        const imageFile = imageInput.files[0];
 
-        if (!title || !responsible || !date) {
-            alert("Por favor, preencha todas as informações!");
-            return;
-        }
+        // Atualiza o conteúdo gerado
+        document.getElementById('generated-title').textContent = title;
+        document.getElementById('generated-responsible').textContent = responsible;
+        document.getElementById('generated-date').textContent = date;
 
-        document.getElementById('header-title').textContent = "Título: " + title;
-        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
+        const generatedContent = document.getElementById('generated-content');
+        generatedContent.innerHTML = '';
 
-        document.getElementById('generated-page').style.display = "block";
-    }
+        const mediaItem = document.createElement('div');
+        mediaItem.classList.add('media-item');
+        if (alignment === 'left') mediaItem.classList.add('media-item-left');
 
-    function addSection() {
-        const content = document.getElementById('content');
+        const imageElement = document.createElement('img');
+        const objectURL = URL.createObjectURL(imageFile);
+        imageElement.src = objectURL;
 
-        const section = document.createElement('div');
-        section.classList.add('section');
+        const textElement = document.createElement('div');
+        textElement.classList.add('media-text');
+        textElement.textContent = text;
 
-        const sectionTitle = document.createElement('input');
-        sectionTitle.placeholder = 'Título da Sessão';
-        sectionTitle.classList.add('section-title');
-        section.appendChild(sectionTitle);
+        mediaItem.appendChild(imageElement);
+        mediaItem.appendChild(textElement);
+        generatedContent.appendChild(mediaItem);
 
-        const sectionContent = document.createElement('div');
-        sectionContent.classList.add('section-content');
-
-        const column1 = document.createElement('div');
-        column1.classList.add('section-column');
-        column1.setAttribute('id', 'column1');
-        sectionContent.appendChild(column1);
-
-        const column2 = document.createElement('div');
-        column2.classList.add('section-column');
-        column2.setAttribute('id', 'column2');
-        sectionContent.appendChild(column2);
-
-        section.appendChild(sectionContent);
-
-        content.appendChild(section);
-        currentSection = section;
-        imageIndex = 0; // Reset image index for each new section.
-    }
-
-    function addText() {
-        const column2 = currentSection.querySelector('#column2');
-        const textBox = document.createElement('div');
-        textBox.classList.add('text-box');
-        textBox.contentEditable = "true";
-        column2.appendChild(textBox);
-
-        // Align text with last inserted image
-        alignTextWithImage();
-    }
-
-    function addImage() {
-        const column1 = currentSection.querySelector('#column1');
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = () => {
-            const file = input.files[0];
-            if (file) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.onload = function() {
-                    img.style.maxWidth = '8cm'; // Ensures that image width does not exceed 8cm
-                    column1.appendChild(img);
-                    imageIndex++;
-                    alignTextWithImage(); // Call alignment after inserting image
-                };
-                img.onclick = () => img.remove(); // Delete image on click
-            }
-        };
-        input.click();
-    }
-
-    function alignTextWithImage() {
-        const column2 = currentSection.querySelector('#column2');
-        const images = currentSection.querySelectorAll('#column1 img');
-        const lastImage = images[imageIndex - 1];
-
-        // If there's a new image, align subsequent texts with its height
-        if (lastImage) {
-            const imageHeight = lastImage.offsetHeight;
-
-            const textBoxes = column2.querySelectorAll('.text-box');
-            textBoxes.forEach(textBox => {
-                if (Array.from(textBox.previousElementSiblings).length >= imageIndex) {
-                    textBox.style.marginTop = `${imageHeight + 10}px`; // Align text below the image
-                }
-            });
-        }
-    }
-
-    function addArrow() {
-        // Arrow functionality implementation can go here
+        // Exibe a página gerada
+        document.getElementById('generated-page').style.display = 'block';
     }
 </script>
+
 </body>
 </html>
