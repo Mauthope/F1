@@ -9,23 +9,22 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background: #f0f0f0;
+            box-sizing: border-box;
         }
 
         header {
             background-color: #4CAF50;
             color: white;
-            text-align: center;
             padding: 10px;
-            font-size: 18px;
+            text-align: center;
         }
 
         .container {
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            background: white;
             border: 1px solid #ddd;
+            background: #f9f9f9;
         }
 
         .form-group {
@@ -33,15 +32,16 @@
         }
 
         .form-group label {
-            font-weight: bold;
             display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
         }
 
         .form-group input {
             width: 100%;
-            padding: 8px;
+            padding: 10px;
             border: 1px solid #ccc;
-            border-radius: 4px;
+            border-radius: 5px;
         }
 
         #generated-page {
@@ -50,7 +50,7 @@
             width: 210mm;
             height: 297mm;
             background: white;
-            border: 1px solid black;
+            border: 1px solid #000;
             padding: 20px;
             position: relative;
         }
@@ -58,42 +58,53 @@
         .header-info {
             text-align: center;
             margin-bottom: 20px;
+            font-size: 14px;
         }
 
         .section {
             display: flex;
-            flex-direction: column;
-            border: 1px dashed #aaa;
+            align-items: flex-start;
             margin-bottom: 20px;
             padding: 10px;
+            border: 1px dashed #aaa;
+            background: #f3f3f3;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            width: 100%;
         }
 
         .section-content {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 10px;
         }
 
-        .section img {
+        .section-content img,
+        .section-content video {
             width: 8cm;
             height: 8cm;
             object-fit: contain;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             cursor: pointer;
         }
 
-        .section textarea {
-            flex: 1;
-            resize: none;
-            height: 8cm;
-            border: 1px solid #ccc;
+        .section-content p {
+            width: calc(100% - 8cm);
+            word-wrap: break-word;
+            border: 1px solid #ddd;
+            margin: 0;
             padding: 5px;
-            font-size: 14px;
+            box-sizing: border-box;
         }
 
         button {
             background: none;
-            border: 1px dashed #555;
+            border: 1px dashed #aaa;
             padding: 5px 10px;
             cursor: pointer;
             color: #555;
@@ -103,16 +114,19 @@
             background: #ddd;
         }
 
-        .ghost {
-            display: inline-block;
-            margin: 10px 0;
+        button:active {
+            background: #bbb;
         }
 
-        canvas {
+        .ghost {
+            display: inline-block;
+        }
+
+        .arrow {
             position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
+            width: 2px;
+            background: black;
+            z-index: 10;
         }
 
         @media print {
@@ -128,7 +142,7 @@
 </head>
 <body>
 <header>
-    Gerador de Página com Sessões Dinâmicas
+    <h1>Gerador de Página</h1>
 </header>
 
 <div class="container">
@@ -136,14 +150,17 @@
         <label for="title">Título:</label>
         <input type="text" id="title" placeholder="Digite o título">
     </div>
+
     <div class="form-group">
         <label for="responsible">Responsável:</label>
         <input type="text" id="responsible" placeholder="Digite o responsável">
     </div>
+
     <div class="form-group">
         <label for="date">Data:</label>
         <input type="date" id="date">
     </div>
+
     <button onclick="generatePage()">Gerar Página</button>
 </div>
 
@@ -153,15 +170,13 @@
         <div id="header-responsible"></div>
         <div id="header-date"></div>
     </div>
-    <canvas id="arrow-canvas"></canvas>
     <div id="content"></div>
     <button class="ghost" onclick="addSection()">Adicionar Sessão</button>
-    <button class="ghost" onclick="enableArrowMode()">Adicionar Setas</button>
 </div>
 
 <script>
-    let isArrowMode = false;
-    let arrowStart = null;
+    let startArrow = null;
+    let isDrawingArrow = false;
 
     function generatePage() {
         const title = document.getElementById('title').value;
@@ -182,74 +197,94 @@
 
     function addSection() {
         const content = document.getElementById('content');
+
         const section = document.createElement('div');
         section.classList.add('section');
 
         const sectionTitle = document.createElement('input');
         sectionTitle.placeholder = 'Título da Sessão';
-        sectionTitle.style.marginBottom = "10px";
+        sectionTitle.classList.add('section-title');
         section.appendChild(sectionTitle);
 
         const sectionContent = document.createElement('div');
         sectionContent.classList.add('section-content');
 
-        const img = document.createElement('img');
-        img.onclick = () => editImage(img);
-        img.src = "https://via.placeholder.com/150";
-        sectionContent.appendChild(img);
+        const addText = document.createElement('button');
+        addText.classList.add('ghost');
+        addText.textContent = "Adicionar Texto";
+        addText.onclick = () => {
+            const text = prompt("Digite o texto:");
+            if (text) {
+                const paragraph = document.createElement('p');
+                paragraph.textContent = text;
+                sectionContent.appendChild(paragraph);
+            }
+        };
 
-        const text = document.createElement('textarea');
-        text.placeholder = "Escreva algo...";
-        sectionContent.appendChild(text);
+        const addImage = document.createElement('button');
+        addImage.classList.add('ghost');
+        addImage.textContent = "Adicionar Imagem";
+        addImage.onclick = () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = () => {
+                const file = input.files[0];
+                if (file) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.onclick = () => {
+                        const newSrc = prompt('Digite a URL da nova imagem:', img.src);
+                        if (newSrc) img.src = newSrc;
+                    };
+                    sectionContent.appendChild(img);
+                }
+            };
+            input.click();
+        };
 
+        const addArrow = document.createElement('button');
+        addArrow.classList.add('ghost');
+        addArrow.textContent = "Adicionar Seta";
+        addArrow.onclick = (e) => {
+            if (isDrawingArrow) {
+                const endX = e.clientX - section.getBoundingClientRect().left;
+                const endY = e.clientY - section.getBoundingClientRect().top;
+                drawArrow(startArrow, endX, endY);
+                isDrawingArrow = false;
+            } else {
+                startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
+                isDrawingArrow = true;
+            }
+        };
+
+        sectionContent.appendChild(addText);
+        sectionContent.appendChild(addImage);
+        sectionContent.appendChild(addArrow);
         section.appendChild(sectionContent);
+
         content.appendChild(section);
     }
 
-    function editImage(img) {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = () => {
-            const file = input.files[0];
-            if (file) img.src = URL.createObjectURL(file);
-        };
-        input.click();
-    }
+    function drawArrow(start, endX, endY) {
+        const section = document.querySelector('.section');
+        const arrow = document.createElement('div');
+        arrow.classList.add('arrow');
 
-    function enableArrowMode() {
-        isArrowMode = !isArrowMode;
-        alert(isArrowMode ? "Modo de setas ativado" : "Modo de setas desativado");
-        const canvas = document.getElementById('arrow-canvas');
-        if (isArrowMode) {
-            canvas.width = document.getElementById('generated-page').offsetWidth;
-            canvas.height = document.getElementById('generated-page').offsetHeight;
-            canvas.style.pointerEvents = 'auto';
-            canvas.addEventListener('click', drawArrow);
-        } else {
-            canvas.removeEventListener('click', drawArrow);
-        }
-    }
+        const startX = start.x;
+        const startY = start.y;
 
-    function drawArrow(event) {
-        const canvas = document.getElementById('arrow-canvas');
-        const ctx = canvas.getContext('2d');
-        const rect = canvas.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+        const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+        const angle = Math.atan2(endY - startY, endX - startX);
 
-        if (!arrowStart) {
-            arrowStart = { x, y };
-        } else {
-            ctx.beginPath();
-            ctx.moveTo(arrowStart.x, arrowStart.y);
-            ctx.lineTo(x, y);
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            arrowStart = null;
-        }
+        arrow.style.top = startY + "px";
+        arrow.style.left = startX + "px";
+        arrow.style.height = length + "px";
+        arrow.style.transform = `rotate(${angle}rad)`;
+
+        section.appendChild(arrow);
     }
 </script>
+
 </body>
 </html>
