@@ -37,7 +37,7 @@
             margin-bottom: 5px;
         }
 
-        .form-group input, .form-group textarea {
+        .form-group input {
             width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -52,27 +52,59 @@
             background: white;
             border: 1px solid #000;
             padding: 20px;
-            overflow-y: auto;
+            position: relative;
+        }
+
+        .header-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
         }
 
         .section {
+            display: flex;
+            flex-wrap: wrap;
             margin-bottom: 20px;
+            gap: 10px;
             padding: 10px;
             border: 1px dashed #aaa;
             background: #f3f3f3;
         }
 
-        .footer {
-            position: absolute;
-            bottom: 10px;
-            width: calc(100% - 40px);
-            text-align: center;
-            font-size: 12px;
+        .section-content img, .section-content video {
+            max-width: 150px;
+            margin-bottom: 10px;
+            display: block;
         }
 
-        .section-content img, .section-content video {
-            max-width: 100%;
-            margin-bottom: 10px;
+        button {
+            background: none;
+            border: 1px dashed #aaa;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        button:hover {
+            background: #ddd;
+        }
+
+        button:active {
+            background: #bbb;
+        }
+
+        .ghost {
+            display: inline-block;
+        }
+
+        @media print {
+            button {
+                display: none !important;
+            }
+
+            #generated-page {
+                border: none;
+            }
         }
     </style>
 </head>
@@ -101,12 +133,12 @@
 </div>
 
 <div id="generated-page">
-    <div id="content"></div>
-    <div class="footer">
-        <span id="footer-title"></span> | 
-        <span id="footer-responsible"></span> | 
-        <span id="footer-date"></span>
+    <div class="header-info">
+        <div id="header-title"></div>
+        <div id="header-responsible"></div>
+        <div id="header-date"></div>
     </div>
+    <div id="content"></div>
 </div>
 
 <script>
@@ -120,9 +152,9 @@
             return;
         }
 
-        document.getElementById('footer-title').textContent = title;
-        document.getElementById('footer-responsible').textContent = responsible;
-        document.getElementById('footer-date').textContent = new Date(date).toLocaleDateString();
+        document.getElementById('header-title').textContent = "Título: " + title;
+        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
         document.getElementById('generated-page').style.display = "block";
         addSection();
@@ -135,6 +167,7 @@
         section.classList.add('section');
 
         const addText = document.createElement('button');
+        addText.classList.add('ghost');
         addText.textContent = "Adicionar Texto";
         addText.onclick = () => {
             const text = prompt("Digite o texto:");
@@ -146,38 +179,53 @@
         };
 
         const addImage = document.createElement('button');
+        addImage.classList.add('ghost');
         addImage.textContent = "Adicionar Imagem";
         addImage.onclick = () => {
-            const url = prompt("Digite a URL da imagem:");
-            if (url) {
-                const img = document.createElement('img');
-                img.src = url;
-                section.appendChild(img);
-            }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = () => {
+                const file = input.files[0];
+                if (file) {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    section.appendChild(img);
+                }
+            };
+            input.click();
         };
 
         const addVideo = document.createElement('button');
+        addVideo.classList.add('ghost');
         addVideo.textContent = "Adicionar Vídeo";
         addVideo.onclick = () => {
-            const url = prompt("Digite a URL do vídeo:");
-            if (url) {
-                const video = document.createElement('video');
-                video.src = url;
-                video.controls = true;
-                section.appendChild(video);
-            }
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/*';
+            input.onchange = () => {
+                const file = input.files[0];
+                if (file) {
+                    const video = document.createElement('video');
+                    video.src = URL.createObjectURL(file);
+                    video.controls = true;
+                    section.appendChild(video);
+                }
+            };
+            input.click();
         };
 
-        const addSubsection = document.createElement('button');
-        addSubsection.textContent = "Adicionar Subsessão";
-        addSubsection.onclick = () => {
-            addSection();
+        const addArrow = document.createElement('button');
+        addArrow.classList.add('ghost');
+        addArrow.textContent = "Adicionar Seta";
+        addArrow.onclick = () => {
+            alert("Conexão entre pontos não implementada.");
         };
 
         section.appendChild(addText);
         section.appendChild(addImage);
         section.appendChild(addVideo);
-        section.appendChild(addSubsection);
+        section.appendChild(addArrow);
 
         content.appendChild(section);
     }
