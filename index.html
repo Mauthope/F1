@@ -65,6 +65,7 @@
         .section {
             display: flex;
             flex-direction: row;
+            align-items: flex-start;
             margin-bottom: 20px;
             padding: 10px;
             border: 1px dashed #aaa;
@@ -82,23 +83,20 @@
 
         .section-content {
             display: flex;
-            flex-direction: row;
-            gap: 10px;
             width: 100%;
-            flex-wrap: wrap;
-            justify-content: space-between;
+            gap: 10px;
         }
 
-        .column {
+        .section-column {
             flex: 1;
-            min-width: 8cm;
+            min-width: 100px;
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .section-content img,
-        .section-content video {
+        .section-column img,
+        .section-column video {
             max-width: 8cm;
             max-height: 8cm;
             object-fit: contain;
@@ -118,7 +116,6 @@
             white-space: pre-wrap;
             box-sizing: border-box;
             display: inline-block;
-            vertical-align: top;
         }
 
         .button-container {
@@ -229,6 +226,7 @@
         const section = document.createElement('div');
         section.classList.add('section');
         section.classList.add('active-section');
+        section.setAttribute('data-layout', 'horizontal');  // Horizontal layout by default
 
         const sectionTitle = document.createElement('input');
         sectionTitle.placeholder = 'Título da Sessão';
@@ -239,21 +237,23 @@
         sectionContent.classList.add('section-content');
 
         const column1 = document.createElement('div');
-        column1.classList.add('column');
+        column1.classList.add('section-column');
+        column1.setAttribute('id', 'column1');
         sectionContent.appendChild(column1);
 
         const column2 = document.createElement('div');
-        column2.classList.add('column');
+        column2.classList.add('section-column');
+        column2.setAttribute('id', 'column2');
         sectionContent.appendChild(column2);
 
         section.appendChild(sectionContent);
+
         content.appendChild(section);
         currentSection = section;
     }
 
     function addText() {
-        const sectionContent = currentSection.querySelector('.section-content');
-        const column2 = sectionContent.children[1];
+        const column2 = currentSection.querySelector('#column2');
         const textBox = document.createElement('div');
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
@@ -261,8 +261,7 @@
     }
 
     function addImage() {
-        const sectionContent = currentSection.querySelector('.section-content');
-        const column1 = sectionContent.children[0];
+        const column1 = currentSection.querySelector('#column1');
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
@@ -271,30 +270,29 @@
             if (file) {
                 const img = document.createElement('img');
                 img.src = URL.createObjectURL(file);
-                img.onclick = () => removeImage(img); // Allows image to be removed
+                img.onclick = () => img.remove(); // Delete image on click
                 column1.appendChild(img);
             }
         };
         input.click();
     }
 
-    function removeImage(img) {
-        img.remove(); // Remove image from the column
-    }
-
     function addArrow() {
         const section = currentSection;
-        section.onclick = (e) => {
-            if (isDrawingArrow) {
-                const endX = e.clientX - section.getBoundingClientRect().left;
-                const endY = e.clientY - section.getBoundingClientRect().top;
-                drawArrow(startArrow.x, startArrow.y, endX, endY);
-                isDrawingArrow = false;
-                startArrow = null;
-            } else {
-                startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-                isDrawingArrow = true;
+        section.onmousedown = (e) => {
+            startArrow = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
+            isDrawingArrow = true;
+        };
+
+        section.onmousemove = (e) => {
+            if (isDrawingArrow && startArrow) {
+                drawArrow(startArrow.x, startArrow.y, e.clientX - section.getBoundingClientRect().left, e.clientY - section.getBoundingClientRect().top);
             }
+        };
+
+        section.onmouseup = () => {
+            isDrawingArrow = false;
+            startArrow = null;
         };
     }
 
