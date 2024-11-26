@@ -148,14 +148,28 @@
             z-index: 10;
         }
 
-        @media print {
-            button {
-                display: none !important;
-            }
+        #trainingModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
 
-            #generated-page {
-                border: none;
-            }
+        #trainingModalContent {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            width: 300px;
+        }
+
+        #trainingModalContent input, #trainingModalContent button {
+            margin-bottom: 10px;
+            width: 100%;
         }
     </style>
 </head>
@@ -197,114 +211,202 @@
     <button onclick="addText()">Adicionar Texto</button>
     <button onclick="addImage()">Adicionar Imagem</button>
     <button onclick="addArrow()">Adicionar Seta</button>
+    <button onclick="startTimer()">Iniciar Cronômetro</button>
+    <button onclick="openTrainingModal()">Treinamento</button>
+</div>
+
+<!-- Modal for Training -->
+<div id="trainingModal">
+    <div id="trainingModalContent">
+        <h3>Cadastro de Treinamento</h3>
+        <input type="text" id="trainingTitle" placeholder="Título do Treinamento">
+        <input type="text" id="trainer" placeholder="Ministrante">
+        <input type="text" id="shift" placeholder="Turno">
+        <input type="text" id="sector" placeholder="Setor">
+        <input type="text" id="signature" placeholder="Assinatura">
+        <input type="hidden" id="trainingTime">
+        <button onclick="saveTraining()">Salvar</button>
+        <button onclick="closeTrainingModal()">Fechar</button>
+    </div>
 </div>
 
 <script>
-    let currentSection = null;
-    let imageIndex = 0; // Counter to track image insertion and alignment for text.
+  let currentSection = null;
+let imageIndex = 0; // Contador para controlar a inserção e alinhamento das imagens
+let timerInterval;
+let startTime;
 
-    function generatePage() {
-        const title = document.getElementById('title').value;
-        const responsible = document.getElementById('responsible').value;
-        const date = document.getElementById('date').value;
+function generatePage() {
+    const title = document.getElementById('title').value;
+    const responsible = document.getElementById('responsible').value;
+    const date = document.getElementById('date').value;
 
-        if (!title || !responsible || !date) {
-            alert("Por favor, preencha todas as informações!");
-            return;
+    if (!title || !responsible || !date) {
+        alert("Por favor, preencha todas as informações!");
+        return;
+    }
+
+    document.getElementById('header-title').textContent = "Título: " + title;
+    document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+    document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
+
+    document.getElementById('generated-page').style.display = "block";
+}
+
+function addSection() {
+    const content = document.getElementById('content');
+
+    const section = document.createElement('div');
+    section.classList.add('section');
+
+    const sectionTitle = document.createElement('input');
+    sectionTitle.placeholder = 'Título da Sessão';
+    sectionTitle.classList.add('section-title');
+    section.appendChild(sectionTitle);
+
+    const sectionContent = document.createElement('div');
+    sectionContent.classList.add('section-content');
+
+    const column1 = document.createElement('div');
+    column1.classList.add('section-column');
+    column1.setAttribute('id', 'column1');
+    sectionContent.appendChild(column1);
+
+    const column2 = document.createElement('div');
+    column2.classList.add('section-column');
+    column2.setAttribute('id', 'column2');
+    sectionContent.appendChild(column2);
+
+    section.appendChild(sectionContent);
+
+    content.appendChild(section);
+    currentSection = section;
+    imageIndex = 0; // Resetar o índice das imagens a cada nova seção
+}
+
+function addText() {
+    const column2 = currentSection.querySelector('#column2');
+    const textBox = document.createElement('div');
+    textBox.classList.add('text-box');
+    textBox.contentEditable = "true";
+    column2.appendChild(textBox);
+
+    // Alinhar o texto com a última imagem inserida
+    alignTextWithImage();
+}
+
+function addImage() {
+    const column1 = currentSection.querySelector('#column1');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = () => {
+        const file = input.files[0];
+        if (file) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onclick = () => enlargeImage(img);
+            column1.appendChild(img);
+
+            // Incrementar o índice da imagem após a inserção
+            imageIndex++;
         }
+    };
+    input.click();
+}
 
-        document.getElementById('header-title').textContent = "Título: " + title;
-        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
+function enlargeImage(img) {
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(0, 0, 0, 0.8)';
+    modal.style.zIndex = '1000';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
 
-        document.getElementById('generated-page').style.display = "block";
+    const modalImg = document.createElement('img');
+    modalImg.src = img.src;
+    modalImg.style.maxWidth = '90%';
+    modalImg.style.maxHeight = '90%';
+    modal.appendChild(modalImg);
+
+    const closeButton = document.createElement('button');
+    closeButton.textContent = 'Fechar';
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '20px';
+    closeButton.style.right = '20px';
+    closeButton.style.backgroundColor = 'red';
+    closeButton.style.color = 'white';
+    closeButton.style.border = 'none';
+    closeButton.style.padding = '10px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.onclick = () => {
+        document.body.removeChild(modal);
+    };
+
+    modal.appendChild(closeButton);
+    document.body.appendChild(modal);
+}
+
+function addArrow() {
+    const column1 = currentSection.querySelector('#column1');
+    const arrow = document.createElement('div');
+    arrow.classList.add('arrow');
+    arrow.style.height = '1px';
+    arrow.style.width = '50px';
+    column1.appendChild(arrow);
+}
+
+function startTimer() {
+    const startButton = document.querySelector('button[onclick="startTimer()"]');
+    if (startButton.textContent === "Iniciar Cronômetro") {
+        startButton.textContent = "Parar Cronômetro";
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 1000);
+    } else {
+        clearInterval(timerInterval);
+        startButton.textContent = "Iniciar Cronômetro";
+    }
+}
+
+function updateTimer() {
+    const elapsed = Date.now() - startTime;
+    const minutes = Math.floor(elapsed / 60000);
+    const seconds = Math.floor((elapsed % 60000) / 1000);
+    const timerDisplay = document.getElementById('timer');
+    timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+}
+
+function openTrainingModal() {
+    document.getElementById('trainingModal').style.display = 'flex';
+    startTimer();
+}
+
+function closeTrainingModal() {
+    document.getElementById('trainingModal').style.display = 'none';
+    clearInterval(timerInterval);
+}
+
+function saveTraining() {
+    const trainingTitle = document.getElementById('trainingTitle').value;
+    const trainer = document.getElementById('trainer').value;
+    const shift = document.getElementById('shift').value;
+    const sector = document.getElementById('sector').value;
+    const signature = document.getElementById('signature').value;
+    const trainingTime = document.getElementById('trainingTime').value;
+
+    if (!trainingTitle || !trainer || !shift || !sector || !signature || !trainingTime) {
+        alert("Por favor, preencha todos os campos do treinamento.");
+        return;
     }
 
-    function addSection() {
-        const content = document.getElementById('content');
-
-        const section = document.createElement('div');
-        section.classList.add('section');
-
-        const sectionTitle = document.createElement('input');
-        sectionTitle.placeholder = 'Título da Sessão';
-        sectionTitle.classList.add('section-title');
-        section.appendChild(sectionTitle);
-
-        const sectionContent = document.createElement('div');
-        sectionContent.classList.add('section-content');
-
-        const column1 = document.createElement('div');
-        column1.classList.add('section-column');
-        column1.setAttribute('id', 'column1');
-        sectionContent.appendChild(column1);
-
-        const column2 = document.createElement('div');
-        column2.classList.add('section-column');
-        column2.setAttribute('id', 'column2');
-        sectionContent.appendChild(column2);
-
-        section.appendChild(sectionContent);
-
-        content.appendChild(section);
-        currentSection = section;
-        imageIndex = 0; // Reset image index for each new section.
-    }
-
-    function addText() {
-        const column2 = currentSection.querySelector('#column2');
-        const textBox = document.createElement('div');
-        textBox.classList.add('text-box');
-        textBox.contentEditable = "true";
-        column2.appendChild(textBox);
-
-        // Align text with last inserted image
-        alignTextWithImage();
-    }
-
-    function addImage() {
-        const column1 = currentSection.querySelector('#column1');
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = () => {
-            const file = input.files[0];
-            if (file) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.onload = function() {
-                    img.style.maxWidth = '8cm'; // Ensures that image width does not exceed 8cm
-                    column1.appendChild(img);
-                    imageIndex++;
-                    alignTextWithImage(); // Call alignment after inserting image
-                };
-                img.onclick = () => img.remove(); // Delete image on click
-            }
-        };
-        input.click();
-    }
-
-    function alignTextWithImage() {
-        const column2 = currentSection.querySelector('#column2');
-        const images = currentSection.querySelectorAll('#column1 img');
-        const lastImage = images[imageIndex - 1];
-
-        // If there's a new image, align subsequent texts with its height
-        if (lastImage) {
-            const imageHeight = lastImage.offsetHeight;
-
-            const textBoxes = column2.querySelectorAll('.text-box');
-            textBoxes.forEach(textBox => {
-                if (Array.from(textBox.previousElementSiblings).length >= imageIndex) {
-                    textBox.style.marginTop = `${imageHeight + 10}px`; // Align text below the image
-                }
-            });
-        }
-    }
-
-    function addArrow() {
-        // Arrow functionality implementation can go here
-    }
+    alert("Treinamento salvo com sucesso!");
+    closeTrainingModal();
+}
 </script>
 </body>
 </html>
