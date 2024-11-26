@@ -1,96 +1,221 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Página</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-        }
-        #generated-page {
-            display: none;
-            margin-top: 20px;
-        }
-        .section {
-            margin-bottom: 20px;
-        }
-        .text-box {
-            width: 100%;
-            height: 100px;
-        }
-        .section-title {
-            width: 100%;
-            margin-bottom: 10px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
+    <style>
+
+       body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    background: #f9f9f9;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+#generated-page {
+    display: none;
+    margin: 20px auto;
+    width: 210mm;
+    height: 297mm;
+    background: white;
+    border: 1px solid #000;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.button-container button {
+    background: none;
+    border: 1px dashed #aaa;
+    padding: 5px 10px;
+    cursor: pointer;
+    color: #555;
+}
+
+.button-container button:hover {
+    background: #ddd;
+}
+
+.button-container button:active {
+    background: #bbb;
+}
+
+.popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.popup-content {
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+}
+
+.popup-timer {
+    margin-top: 10px;
+}
+
+#training-signature {
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+}
+
+#download-section {
+    margin-top: 20px;
+}
+
+#training-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#training-table th, #training-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#training-table th {
+    background-color: #f3f3f3;
+}
+ 
+    </style>
 <body>
+<header>
+    <h1>Gerador de Página</h1>
+</header>
 
-<h1>Gerador de Página</h1>
+<div class="container">
+    <div class="form-group">
+        <label for="title">Título:</label>
+        <input type="text" id="title" placeholder="Digite o título">
+    </div>
 
-<!-- Formulário de entrada -->
-<div>
-    <input type="text" id="title" placeholder="Título" />
-    <input type="text" id="responsible" placeholder="Responsável" />
-    <input type="date" id="date" />
+    <div class="form-group">
+        <label for="responsible">Responsável:</label>
+        <input type="text" id="responsible" placeholder="Digite o responsável">
+    </div>
+
+    <div class="form-group">
+        <label for="date">Data:</label>
+        <input type="date" id="date">
+    </div>
+
     <button onclick="generatePage()">Gerar Página</button>
 </div>
 
-<!-- Exibição da página gerada -->
 <div id="generated-page">
-    <div id="header-title"></div>
-    <div id="header-responsible"></div>
-    <div id="header-date"></div>
-
+    <div class="header-info">
+        <div id="header-title"></div>
+        <div id="header-responsible"></div>
+        <div id="header-date"></div>
+    </div>
     <div id="content"></div>
-    <button onclick="addSection()">Adicionar Seção</button>
-    <button onclick="addText()">Adicionar Caixa de Texto</button>
+</div>
+
+<div class="button-container">
+    <button onclick="addSection()">Adicionar Sessão</button>
+    <button onclick="addText()">Adicionar Texto</button>
     <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="addSignature()">Adicionar Assinatura</button>
+    <button onclick="openTrainingPopup()">Inserir Treinamento</button>
 </div>
 
-<!-- Popup para inserção de treinamentos -->
-<div id="training-popup" style="display: none;">
-    <input type="text" id="training-title" placeholder="Título do Treinamento" />
-    <input type="text" id="location" placeholder="Local" />
-    <input type="text" id="sector" placeholder="Setor" />
-    <input type="text" id="instructor" placeholder="Instrutor" />
-    <button onclick="saveTraining()">Salvar</button>
+<div id="training-popup" class="popup">
+    <div class="popup-content">
+        <h3>Inserir Treinamento</h3>
+        <label for="training-title">Título:</label>
+        <input type="text" id="training-title" placeholder="Título do treinamento">
+        <label for="training-location">Local:</label>
+        <input type="text" id="training-location" placeholder="Local do treinamento">
+        <label for="training-sector">Setor:</label>
+        <input type="text" id="training-sector" placeholder="Setor">
+        <label for="training-instructor">Ministrante:</label>
+        <input type="text" id="training-instructor" placeholder="Ministrante">
+        <label for="training-signature">Assinatura:</label>
+        <canvas id="training-signature" width="300" height="100"></canvas>
+        <div class="popup-timer">
+            <span id="timer">00:00</span>
+        </div>
+        <button onclick="saveTraining()">Salvar</button>
+        <button onclick="closeTrainingPopup()">Cancelar</button>
+    </div>
 </div>
 
-<!-- Tabela de Treinamentos -->
-<table id="trainings-table">
-    <thead>
-        <tr>
-            <th>Título</th>
-            <th>Local</th>
-            <th>Setor</th>
-            <th>Instrutor</th>
-            <th>Assinatura</th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Dados do treinamento serão inseridos aqui -->
-    </tbody>
-</table>
-
-<button onclick="downloadCSV()">Baixar CSV</button>
+<div id="download-section">
+    <button onclick="downloadCSV()">Baixar CSV</button>
+    <table id="training-table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Local</th>
+                <th>Setor</th>
+                <th>Ministrante</th>
+                <th>Assinatura</th>
+                <th>Tempo</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
 
 <script src="script.js"></script>
-</body>
-</html>
+    <script>
 
-
-<script>
-
-    let currentSection = null; // Variável para armazenar a seção atual
+        let trainingData = [];
 let timerInterval;
-let seconds = 0;
-let cronometroAtivo = false; // Para evitar que o cronômetro inicie múltiplas vezes
-let cronometroValor = 0; // Para armazenar o tempo do cronômetro
+let timeElapsed = 0;
 
-// Gera o conteúdo da página
 function generatePage() {
     const title = document.getElementById('title').value;
     const responsible = document.getElementById('responsible').value;
@@ -105,167 +230,131 @@ function generatePage() {
     document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
     document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
-    document.getElementById('generated-page').style.display = 'block';
+    document.getElementById('generated-page').style.display = "block";
 }
 
-// Adiciona uma nova seção
 function addSection() {
     const content = document.getElementById('content');
     const section = document.createElement('div');
     section.classList.add('section');
-
-    const title = document.createElement('input');
-    title.type = 'text';
-    title.placeholder = 'Título da Sessão';
-    title.classList.add('section-title');
+    const sectionTitle = document.createElement('input');
+    sectionTitle.placeholder = 'Título da Sessão';
+    sectionTitle.classList.add('section-title');
+    section.appendChild(sectionTitle);
 
     const sectionContent = document.createElement('div');
     sectionContent.classList.add('section-content');
-
-    section.appendChild(title);
     section.appendChild(sectionContent);
     content.appendChild(section);
-
-    currentSection = sectionContent; // Atualiza a seção atual
 }
 
-// Adiciona uma caixa de texto à seção
 function addText() {
-    if (!currentSection) return;
-
-    const textBox = document.createElement('textarea');
+    const section = document.querySelector('.section');
+    const textBox = document.createElement('div');
     textBox.classList.add('text-box');
-    currentSection.appendChild(textBox);
+    section.appendChild(textBox);
 }
 
-// Adiciona uma imagem à seção
 function addImage() {
-    if (!currentSection) return;
-
-    const imageInput = document.createElement('input');
-    imageInput.type = 'file';
-    imageInput.accept = 'image/*';
-    imageInput.addEventListener('change', (event) => {
-        const file = event.target.files[0];
+    const section = document.querySelector('.section');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        const file = input.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                currentSection.appendChild(img);
-            };
-            reader.readAsDataURL(file);
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onclick = () => img.remove();
+            section.appendChild(img);
         }
-    });
-    currentSection.appendChild(imageInput);
+    };
+    input.click();
 }
 
-// Adiciona uma assinatura à seção
-function addSignature() {
-    if (!currentSection) return;
-
-    const canvas = document.createElement('canvas');
-    canvas.classList.add('signature-canvas');
-    currentSection.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
-    let isDrawing = false;
-
-    canvas.addEventListener('mousedown', (e) => {
-        isDrawing = true;
-        ctx.moveTo(e.offsetX, e.offsetY);
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        if (isDrawing) {
-            ctx.lineTo(e.offsetX, e.offsetY);
-            ctx.stroke();
-        }
-    });
-
-    canvas.addEventListener('mouseup', () => {
-        isDrawing = false;
-    });
-
-    canvas.addEventListener('mouseout', () => {
-        isDrawing = false;
-    });
+function openTrainingPopup() {
+    document.getElementById('training-popup').style.display = 'flex';
+    startTimer();
 }
 
-// Exibe o pop-up para inserir treinamento
-function showPopup() {
-    document.getElementById('training-popup').style.display = 'block';
-}
-
-// Salva o treinamento
-function saveTraining() {
-    const title = document.getElementById('training-title').value;
-    const location = document.getElementById('location').value;
-    const sector = document.getElementById('sector').value;
-    const instructor = document.getElementById('instructor').value;
-    const signature = document.getElementById('signature');
-
-    if (!title || !location || !sector || !instructor || !signature) {
-        alert("Por favor, preencha todas as informações!");
-        return;
-    }
-
-    const table = document.getElementById('trainings-table').getElementsByTagName('tbody')[0];
-    const newRow = table.insertRow();
-    newRow.innerHTML = `<td>${title}</td><td>${location}</td><td>${sector}</td><td>${instructor}</td><td><img src="${signature.toDataURL()}" alt="Assinatura" width="50" height="50"></td>`;
+function closeTrainingPopup() {
     document.getElementById('training-popup').style.display = 'none';
-
-    // Limpa os campos
-    document.getElementById('training-title').value = '';
-    document.getElementById('location').value = '';
-    document.getElementById('sector').value = '';
-    document.getElementById('instructor').value = '';
+    clearInterval(timerInterval);
 }
 
-// Inicia o cronômetro
 function startTimer() {
-    if (cronometroAtivo) return; // Se o cronômetro já estiver ativo, não faz nada
-
-    cronometroAtivo = true;
     timerInterval = setInterval(() => {
-        seconds++;
-        document.getElementById('timer').textContent = formatTime(seconds);
+        timeElapsed++;
+        const minutes = Math.floor(timeElapsed / 60);
+        const seconds = timeElapsed % 60;
+        document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }, 1000);
 }
 
-// Para o cronômetro
-function stopTimer() {
-    clearInterval(timerInterval);
-    cronometroAtivo = false;
-    cronometroValor = seconds;
-    seconds = 0; // Reseta o cronômetro visual
-}
+function saveTraining() {
+    const title = document.getElementById('training-title').value;
+    const location = document.getElementById('training-location').value;
+    const sector = document.getElementById('training-sector').value;
+    const instructor = document.getElementById('training-instructor').value;
+    const signatureCanvas = document.getElementById('training-signature');
+    const signatureData = signatureCanvas.toDataURL();
 
-// Formata o tempo do cronômetro para "mm:ss"
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-}
+    if (title && location && sector && instructor) {
+        trainingData.push({
+            title,
+            location,
+            sector,
+            instructor,
+            signature: signatureData,
+            time: document.getElementById('timer').textContent,
+        });
 
-// Baixa os treinamentos em formato CSV
-function downloadCSV() {
-    const table = document.getElementById('trainings-table');
-    let csv = '';
-    for (let row of table.rows) {
-        let rowData = [];
-        for (let cell of row.cells) {
-            rowData.push(cell.innerText || cell.textContent);
-        }
-        csv += rowData.join(',') + '\n';
+        updateTrainingTable();
+        closeTrainingPopup();
+    } else {
+        alert("Por favor, preencha todos os campos!");
     }
+}
 
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const link = document.createElement('a');
+function updateTrainingTable() {
+    const tableBody = document.querySelector('#training-table tbody');
+    tableBody.innerHTML = '';
+    trainingData.forEach(training => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${training.title}</td>
+            <td>${training.location}</td>
+            <td>${training.sector}</td>
+            <td>${training.instructor}</td>
+            <td><img src="${training.signature}" alt="Assinatura" width="50" height="50"></td>
+            <td>${training.time}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function downloadCSV() {
+    const csvContent = [
+        ["Título", "Local", "Setor", "Ministrante", "Assinatura", "Tempo"],
+        ...trainingData.map(t => [
+            t.title, 
+            t.location, 
+            t.sector, 
+            t.instructor, 
+            t.signature, 
+            t.time
+        ])
+    ]
+    .map(e => e.join(","))
+    .join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
-    link.download = 'treinamentos.csv';
+    link.download = "treinamentos.csv";
     link.click();
 }
-</scripe>
-    </body>
-    </html>
+
+    </script>
+</body>
+</html>
