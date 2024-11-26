@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,6 +27,23 @@
             background: #f9f9f9;
         }
 
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
         #generated-page {
             display: none;
             margin: 20px auto;
@@ -40,7 +56,48 @@
             overflow: hidden;
         }
 
-        .section-column img {
+        .header-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px dashed #aaa;
+            background: #f3f3f3;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            background: #f3f3f3;
+            width: 100%;
+            border: none;
+        }
+
+        .section-content {
+            display: flex;
+            gap: 10px;
+        }
+
+        .section-column {
+            flex: 1;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .section-column img,
+        .section-column video {
             max-width: 8cm;
             max-height: 8cm;
             object-fit: contain;
@@ -48,156 +105,310 @@
             cursor: pointer;
         }
 
-        #training-popup {
+        .text-box {
+            width: 100%;
+            max-width: 8cm;
+            min-height: 50px;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            resize: vertical;
+            word-wrap: break-word;
+            overflow: hidden;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+            display: inline-block;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .button-container button {
+            background: none;
+            border: 1px dashed #aaa;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .button-container button:hover {
+            background: #ddd;
+        }
+
+        .button-container button:active {
+            background: #bbb;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 2px;
+            background: black;
+            z-index: 10;
+        }
+
+        /* Pop-up Style */
+        .popup {
             display: none;
             position: fixed;
-            top: 50%;
             left: 50%;
+            top: 50%;
             transform: translate(-50%, -50%);
             background: white;
             padding: 20px;
-            border: 1px solid #ccc;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
             z-index: 1000;
         }
 
-        #training-popup input {
+        .popup input, .popup textarea {
             width: 100%;
-            margin-bottom: 10px;
             padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            margin: 10px 0;
         }
 
-        #signature-canvas {
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
+        /* Signature Field */
+        .signature {
+            border: 1px dashed #ccc;
+            min-height: 100px;
+            margin-top: 10px;
         }
 
-        #training-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+        /* Hide when printing */
+        @media print {
+            button {
+                display: none !important;
+            }
 
-        #training-table th,
-        #training-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        #training-table th {
-            background: #f4f4f4;
+            #generated-page {
+                border: none;
+            }
         }
     </style>
 </head>
-
 <body>
-    <header>
-        <h1>Gerador de Página</h1>
-    </header>
+<header>
+    <h1>Gerador de Página</h1>
+</header>
 
-    <div class="container">
-        <button onclick="openTrainingPopup()">Inserir Treinamento</button>
-        <button onclick="downloadCSV()">Baixar CSV</button>
+<div class="container">
+    <div class="form-group">
+        <label for="title">Título:</label>
+        <input type="text" id="title" placeholder="Digite o título">
     </div>
 
-    <div id="generated-page">
-        <div id="content"></div>
+    <div class="form-group">
+        <label for="responsible">Responsável:</label>
+        <input type="text" id="responsible" placeholder="Digite o responsável">
     </div>
 
-    <div id="training-popup">
-        <h3>Inserir Treinamento</h3>
-        <input type="text" id="training-title" placeholder="Título">
-        <input type="text" id="training-location" placeholder="Local">
-        <input type="text" id="training-department" placeholder="Setor">
-        <input type="text" id="training-presenter" placeholder="Ministrante">
-        <canvas id="signature-canvas" width="300" height="100"></canvas>
-        <button onclick="saveTraining()">Salvar</button>
-        <button onclick="closeTrainingPopup()">Cancelar</button>
+    <div class="form-group">
+        <label for="date">Data:</label>
+        <input type="date" id="date">
     </div>
 
-    <table id="training-table">
+    <button onclick="generatePage()">Gerar Página</button>
+</div>
+
+<div id="generated-page">
+    <div class="header-info">
+        <div id="header-title"></div>
+        <div id="header-responsible"></div>
+        <div id="header-date"></div>
+    </div>
+    <div id="content"></div>
+</div>
+
+<div class="button-container">
+    <button onclick="addSection()">Adicionar Sessão</button>
+    <button onclick="addText()">Adicionar Texto</button>
+    <button onclick="addImage()">Adicionar Imagem</button>
+    <button onclick="addArrow()">Adicionar Seta</button>
+    <button onclick="showPopup()">Inserir Treinamento</button>
+</div>
+
+<!-- Pop-up for Training Information -->
+<div class="popup" id="training-popup">
+    <h2>Inserir Treinamento</h2>
+    <div class="form-group">
+        <label for="training-title">Título:</label>
+        <input type="text" id="training-title" placeholder="Digite o título">
+    </div>
+    <div class="form-group">
+        <label for="location">Local:</label>
+        <input type="text" id="location" placeholder="Digite o local">
+    </div>
+    <div class="form-group">
+        <label for="sector">Setor:</label>
+        <input type="text" id="sector" placeholder="Digite o setor">
+    </div>
+    <div class="form-group">
+        <label for="instructor">Ministrante:</label>
+        <input type="text" id="instructor" placeholder="Digite o ministrante">
+    </div>
+    <div class="form-group">
+        <label for="signature">Assinatura:</label>
+        <textarea id="signature" class="signature" placeholder="Assine aqui"></textarea>
+    </div>
+    <div>
+        <p id="timer">00:00</p>
+    </div>
+    <button onclick="saveTraining()">Salvar</button>
+</div>
+
+<div id="trainings-list">
+    <h3>Treinamentos Registrados:</h3>
+    <table id="trainings-table" border="1">
         <thead>
             <tr>
                 <th>Título</th>
                 <th>Local</th>
                 <th>Setor</th>
                 <th>Ministrante</th>
-                <th>Tempo</th>
+                <th>Assinatura</th>
             </tr>
         </thead>
         <tbody></tbody>
     </table>
+    <button onclick="downloadCSV()">Baixar CSV</button>
+</div>
+<script>
 
-    <script>
-        let trainingStartTime;
-        const signatureCanvas = document.getElementById('signature-canvas');
-        const signatureCtx = signatureCanvas.getContext('2d');
-        let isDrawing = false;
+    let currentSection = null;
+let startArrow = null;
+let point1 = null;
+let timerInterval;
+let seconds = 0;
 
-        signatureCanvas.addEventListener('mousedown', (e) => {
-            isDrawing = true;
-            signatureCtx.moveTo(e.offsetX, e.offsetY);
-        });
+// Gera o conteúdo da página
+function generatePage() {
+    const title = document.getElementById('title').value;
+    const responsible = document.getElementById('responsible').value;
+    const date = document.getElementById('date').value;
 
-        signatureCanvas.addEventListener('mousemove', (e) => {
-            if (isDrawing) {
-                signatureCtx.lineTo(e.offsetX, e.offsetY);
-                signatureCtx.stroke();
-            }
-        });
+    if (!title || !responsible || !date) {
+        alert("Por favor, preencha todas as informações!");
+        return;
+    }
 
-        signatureCanvas.addEventListener('mouseup', () => {
-            isDrawing = false;
-        });
+    document.getElementById('header-title').textContent = "Título: " + title;
+    document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+    document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
-        function openTrainingPopup() {
-            trainingStartTime = Date.now();
-            document.getElementById('training-popup').style.display = 'block';
-        }
+    document.getElementById('generated-page').style.display = "block";
+}
 
-        function closeTrainingPopup() {
-            document.getElementById('training-popup').style.display = 'none';
-        }
+// Adiciona uma nova seção
+function addSection() {
+    const content = document.getElementById('content');
+    const section = document.createElement('div');
+    section.classList.add('section');
 
-        function saveTraining() {
-            const title = document.getElementById('training-title').value;
-            const location = document.getElementById('training-location').value;
-            const department = document.getElementById('training-department').value;
-            const presenter = document.getElementById('training-presenter').value;
-            const elapsedTime = ((Date.now() - trainingStartTime) / 1000).toFixed(2);
+    const sectionTitle = document.createElement('input');
+    sectionTitle.classList.add('section-title');
+    sectionTitle.setAttribute('placeholder', 'Título da Seção');
+    section.appendChild(sectionTitle);
 
-            const tableBody = document.getElementById('training-table').querySelector('tbody');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${title}</td>
-                <td>${location}</td>
-                <td>${department}</td>
-                <td>${presenter}</td>
-                <td>${elapsedTime}s</td>
-            `;
-            tableBody.appendChild(row);
+    const sectionContent = document.createElement('div');
+    sectionContent.classList.add('section-content');
 
-            closeTrainingPopup();
-        }
+    const leftColumn = document.createElement('div');
+    leftColumn.classList.add('section-column');
+    sectionContent.appendChild(leftColumn);
 
-        function downloadCSV() {
-            const rows = Array.from(document.querySelectorAll('#training-table tr'));
-            const csvContent = rows.map(row => {
-                return Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent).join(',');
-            }).join('\n');
+    const rightColumn = document.createElement('div');
+    rightColumn.classList.add('section-column');
+    sectionContent.appendChild(rightColumn);
 
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'treinamentos.csv';
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-    </script>
-</body>
+    section.appendChild(sectionContent);
+    content.appendChild(section);
+    currentSection = section;
+}
 
-</html>
+// Adiciona texto à seção
+function addText() {
+    if (!currentSection) {
+        alert("Adicione uma seção antes de inserir texto.");
+        return;
+    }
+    const textBox = document.createElement('div');
+    textBox.classList.add('text-box');
+    textBox.contentEditable = "true";
+    textBox.textContent = "Digite o texto aqui";
+    currentSection.querySelector('.section-column:first-child').appendChild(textBox);
+}
+
+// Adiciona imagem à seção
+function addImage() {
+    if (!currentSection) {
+        alert("Adicione uma seção antes de inserir uma imagem.");
+        return;
+    }
+    const img = document.createElement('img');
+    img.src = 'https://via.placeholder.com/150';
+    img.alt = 'Imagem';
+    img.onclick = () => alert('Clique para editar ou substituir a imagem.');
+    currentSection.querySelector('.section-column:last-child').appendChild(img);
+}
+
+// Adiciona seta entre elementos
+function addArrow() {
+    if (!currentSection) {
+        alert("Adicione uma seção antes de inserir uma seta.");
+        return;
+    }
+    const arrow = document.createElement('div');
+    arrow.classList.add('arrow');
+    currentSection.appendChild(arrow);
+}
+
+// Exibe pop-up para inserir treinamento
+function showPopup() {
+    document.getElementById('training-popup').style.display = 'block';
+}
+
+// Salva informações do treinamento
+function saveTraining() {
+    const title = document.getElementById('training-title').value;
+    const location = document.getElementById('location').value;
+    const sector = document.getElementById('sector').value;
+    const instructor = document.getElementById('instructor').value;
+    const signature = document.getElementById('signature').value;
+
+    if (!title || !location || !sector || !instructor) {
+        alert("Por favor, preencha todos os campos!");
+        return;
+    }
+
+    const table = document.getElementById('trainings-table').querySelector('tbody');
+    const row = table.insertRow();
+    row.insertCell(0).textContent = title;
+    row.insertCell(1).textContent = location;
+    row.insertCell(2).textContent = sector;
+    row.insertCell(3).textContent = instructor;
+    row.insertCell(4).textContent = signature;
+
+    document.getElementById('training-popup').style.display = 'none';
+    document.getElementById('training-popup').querySelectorAll('input, textarea').forEach(input => input.value = '');
+}
+
+// Baixa os dados do treinamento como CSV
+function downloadCSV() {
+    const table = document.getElementById('trainings-table');
+    let csvContent = "";
+    const rows = table.querySelectorAll('tr');
+
+    rows.forEach(row => {
+        const cols = row.querySelectorAll('td, th');
+        const rowData = Array.from(cols).map(col => col.textContent).join(',');
+        csvContent += rowData + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'treinamentos.csv';
+    link.click();
+}
+
+</script>
