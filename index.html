@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,265 +7,80 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
         }
-
-        header {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px;
-            text-align: center;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
-            border: 1px solid #ddd;
-            background: #f9f9f9;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
         #generated-page {
             display: none;
-            margin: 20px auto;
-            width: 210mm;
-            height: 297mm;
-            background: white;
-            border: 1px solid #000;
-            padding: 20px;
-            position: relative;
-            overflow: hidden;
+            margin-top: 20px;
         }
-
-        .header-info {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
         .section {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
             margin-bottom: 20px;
-            padding: 10px;
-            border: 1px dashed #aaa;
-            background: #f3f3f3;
-            position: relative;
         }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-            background: #f3f3f3;
-            width: 100%;
-            border: none;
-        }
-
-        .section-content {
-            display: flex;
-            gap: 10px;
-        }
-
-        .section-column {
-            flex: 1;
-            min-width: 100px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .section-column img,
-        .section-column video {
-            max-width: 8cm;
-            max-height: 8cm;
-            object-fit: contain;
-            border: 1px solid #ddd;
-            cursor: pointer;
-        }
-
         .text-box {
             width: 100%;
-            max-width: 8cm;
-            min-height: 50px;
-            border: 1px dashed #ccc;
-            padding: 5px;
-            resize: vertical;
-            word-wrap: break-word;
-            overflow: hidden;
-            white-space: pre-wrap;
-            box-sizing: border-box;
-            display: inline-block;
+            height: 100px;
         }
-
-        .signature-canvas {
-            border: 1px dashed #ccc;
-            min-height: 100px;
-            margin-top: 10px;
+        .section-title {
             width: 100%;
-            background-color: #f9f9f9;
-        }
-
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .button-container button {
-            background: none;
-            border: 1px dashed #aaa;
-            padding: 5px 10px;
-            cursor: pointer;
-            color: #555;
-        }
-
-        .button-container button:hover {
-            background: #ddd;
-        }
-
-        .button-container button:active {
-            background: #bbb;
-        }
-
-        /* Pop-up Style */
-        .popup {
-            display: none;
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border: 1px solid #ddd;
-            z-index: 1000;
-        }
-
-        .popup input, .popup textarea {
-            width: 100%;
-            padding: 8px;
-            margin: 10px 0;
-        }
-
-        /* Hide when printing */
-        @media print {
-            button {
-                display: none !important;
-            }
-
-            #generated-page {
-                border: none;
-            }
+            margin-bottom: 10px;
         }
     </style>
 </head>
 <body>
-<header>
-    <h1>Gerador de Página</h1>
-</header>
 
-<div class="container">
-    <div class="form-group">
-        <label for="title">Título:</label>
-        <input type="text" id="title" placeholder="Digite o título">
-    </div>
+<h1>Gerador de Página</h1>
 
-    <div class="form-group">
-        <label for="responsible">Responsável:</label>
-        <input type="text" id="responsible" placeholder="Digite o responsável">
-    </div>
-
-    <div class="form-group">
-        <label for="date">Data:</label>
-        <input type="date" id="date">
-    </div>
-
+<!-- Formulário de entrada -->
+<div>
+    <input type="text" id="title" placeholder="Título" />
+    <input type="text" id="responsible" placeholder="Responsável" />
+    <input type="date" id="date" />
     <button onclick="generatePage()">Gerar Página</button>
 </div>
 
+<!-- Exibição da página gerada -->
 <div id="generated-page">
-    <div class="header-info">
-        <div id="header-title"></div>
-        <div id="header-responsible"></div>
-        <div id="header-date"></div>
-    </div>
-    <div id="content"></div>
-</div>
+    <div id="header-title"></div>
+    <div id="header-responsible"></div>
+    <div id="header-date"></div>
 
-<div class="button-container">
-    <button onclick="addSection()">Adicionar Sessão</button>
-    <button onclick="addText()">Adicionar Texto</button>
+    <div id="content"></div>
+    <button onclick="addSection()">Adicionar Seção</button>
+    <button onclick="addText()">Adicionar Caixa de Texto</button>
     <button onclick="addImage()">Adicionar Imagem</button>
     <button onclick="addSignature()">Adicionar Assinatura</button>
-    <button onclick="showPopup()">Inserir Treinamento</button>
 </div>
 
-<!-- Pop-up for Training Information -->
-<div class="popup" id="training-popup">
-    <h2>Inserir Treinamento</h2>
-    <div class="form-group">
-        <label for="training-title">Título:</label>
-        <input type="text" id="training-title" placeholder="Digite o título">
-    </div>
-    <div class="form-group">
-        <label for="location">Local:</label>
-        <input type="text" id="location" placeholder="Digite o local">
-    </div>
-    <div class="form-group">
-        <label for="sector">Setor:</label>
-        <input type="text" id="sector" placeholder="Digite o setor">
-    </div>
-    <div class="form-group">
-        <label for="instructor">Ministrante:</label>
-        <input type="text" id="instructor" placeholder="Digite o ministrante">
-    </div>
-    <div class="form-group">
-        <label for="signature">Assinatura:</label>
-        <canvas id="signature" class="signature-canvas"></canvas>
-    </div>
-    <div>
-        <p id="timer">00:00</p>
-    </div>
+<!-- Popup para inserção de treinamentos -->
+<div id="training-popup" style="display: none;">
+    <input type="text" id="training-title" placeholder="Título do Treinamento" />
+    <input type="text" id="location" placeholder="Local" />
+    <input type="text" id="sector" placeholder="Setor" />
+    <input type="text" id="instructor" placeholder="Instrutor" />
     <button onclick="saveTraining()">Salvar</button>
 </div>
 
-<div id="trainings-list">
-    <h3>Treinamentos Registrados:</h3>
-    <table id="trainings-table" border="1">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Local</th>
-                <th>Setor</th>
-                <th>Ministrante</th>
-                <th>Assinatura</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-    <button onclick="downloadCSV()">Baixar CSV</button>
-</div>
+<!-- Tabela de Treinamentos -->
+<table id="trainings-table">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Local</th>
+            <th>Setor</th>
+            <th>Instrutor</th>
+            <th>Assinatura</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Dados do treinamento serão inseridos aqui -->
+    </tbody>
+</table>
+
+<button onclick="downloadCSV()">Baixar CSV</button>
+
+<script src="script.js"></script>
+</body>
+</html>
+
 
 <script>
 
