@@ -1,221 +1,327 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicação de Sessões</title>
-    <link rel="stylesheet" href="style.css">
-</head>
+    <title>Gerador de Página</title>
     <style>
         body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-}
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.section1 {
-    width: 100%;
-    padding: 10px;
-    background-color: #f1f1f1;
-}
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #333;
-    color: white;
-    padding: 10px;
-    text-align: center;
-}
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
+        }
 
-#page-footer {
-    text-align: center;
-    padding: 20px;
-}
+        .form-group {
+            margin-bottom: 15px;
+        }
 
-.page-a4 {
-    width: 21cm;
-    min-height: 29.7cm;
-    padding: 20px;
-    margin: 0 auto;
-    background-color: #fff;
-    border: 1px solid #ddd;
-}
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
 
-.buttons-container {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-}
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
 
-.action-btn {
-    padding: 10px 15px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    cursor: pointer;
-}
+        #generated-page {
+            display: none;
+            margin: 20px auto;
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            border: 1px solid #000;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
 
-.action-btn:hover {
-    background-color: #45a049;
-}
+        .header-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
 
-#session-container {
-    margin-top: 20px;
-}
+        .section {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px dashed #aaa;
+            background: #f3f3f3;
+            position: relative;
+        }
 
-.popup {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            background: #f3f3f3;
+            width: 100%;
+            border: none;
+        }
 
-.popup-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 400px;
-}
+        .section-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-.popup input {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
-}
+        .section-row {
+            display: flex;
+            justify-content: flex-start;
+            gap: 10px;
+            width: 100%;
+        }
 
-.popup button {
-    margin-top: 10px;
-}
+        .section-column {
+            flex: 1;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
+        .section-column img,
+        .section-column video {
+            max-width: 8cm;
+            max-height: 8cm;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .text-box {
+            width: 100%;
+            max-width: 8cm;
+            min-height: 50px;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            resize: vertical;
+            word-wrap: break-word;
+            overflow: hidden;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+            display: inline-block;
+            cursor: move;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .button-container button {
+            background: none;
+            border: 1px dashed #aaa;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .button-container button:hover {
+            background: #ddd;
+        }
+
+        .button-container button:active {
+            background: #bbb;
+        }
+
+        .arrow {
+            position: absolute;
+            width: 2px;
+            background: black;
+            z-index: 10;
+        }
+
+        .media-item {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-start;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .media-item img,
+        .media-item video {
+            max-width: 8cm;
+            max-height: 8cm;
+            object-fit: contain;
+            cursor: pointer;
+        }
+
+        .media-text {
+            flex: 1;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            min-height: 50px;
+            resize: vertical;
+            word-wrap: break-word;
+            overflow: hidden;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+        }
+
+        .media-item-left {
+            flex-direction: row-reverse;
+        }
+
+        @media print {
+            button {
+                display: none !important;
+            }
+
+            #generated-page {
+                border: none;
+            }
+        }
     </style>
+</head>
 <body>
+<header>
+    <h1>Gerador de Página</h1>
+</header>
 
-    <div class="section1">
-        <footer class="footer">
-            <div class="footer-content">
-                <span id="timer-display">00:00</span>
-                <button id="start-btn">Iniciar</button>
-                <button id="stop-btn">Parar</button>
-            </div>
-        </footer>
+<div class="container">
+    <div class="form-group">
+        <label for="title">Título:</label>
+        <input type="text" id="title" placeholder="Digite o título">
     </div>
 
-    <div class="section2">
-        <div class="page-a4">
-            <footer id="page-footer">
-                <!-- Rodapé dinâmico aqui -->
-            </footer>
-
-            <div class="buttons-container">
-                <button class="action-btn" id="insert-session">Inserir Sessão</button>
-                <button class="action-btn" id="insert-image">Inserir Imagem</button>
-                <button class="action-btn" id="insert-texts">Inserir Textos</button>
-                <button class="action-btn" id="insert-shape">Inserir Forma</button>
-                <button class="action-btn" id="insert-training">Inserir Treinamento</button>
-            </div>
-
-            <div id="session-container"></div>
-
-        </div>
+    <div class="form-group">
+        <label for="responsible">Responsável:</label>
+        <input type="text" id="responsible" placeholder="Digite o responsável">
     </div>
 
-    <div id="training-popup" class="popup">
-        <div class="popup-content">
-            <h2>Informações do Treinamento</h2>
-            <label for="training-it">IT:</label><input type="text" id="training-it"><br>
-            <label for="training-local">Local:</label><input type="text" id="training-local"><br>
-            <label for="training-setor">Setor:</label><input type="text" id="training-setor"><br>
-            <label for="training-mininstrante">Ministrante:</label><input type="text" id="training-mininstrante"><br>
-            <label for="training-signature">Assinatura:</label><input type="text" id="training-signature"><br>
-            <label for="training-time">Tempo:</label><input type="text" id="training-time"><br>
-            <button id="save-training">Salvar</button>
-            <button id="close-popup">Fechar</button>
-        </div>
+    <div class="form-group">
+        <label for="date">Data:</label>
+        <input type="text" id="date" placeholder="Digite a data">
     </div>
 
-    <script src="script.js"></script>
-    <script>
+    <div class="form-group">
+        <label for="image-upload">Imagem:</label>
+        <input type="file" id="image-upload" accept="image/*">
+    </div>
 
-        let timer;
-let seconds = 0;
-let isRunning = false;
+    <div class="form-group">
+        <label for="image-alignment">Alinhamento do texto:</label>
+        <select id="image-alignment">
+            <option value="left">À esquerda</option>
+            <option value="right">À direita</option>
+            <option value="bottom">Abaixo</option>
+        </select>
+    </div>
 
-// Função para atualizar o cronômetro
-function updateTimer() {
-    let minutes = Math.floor(seconds / 60);
-    let secs = seconds % 60;
-    document.getElementById('timer-display').innerText = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    seconds++;
-}
+    <div class="form-group">
+        <label for="text-input">Texto:</label>
+        <textarea id="text-input" placeholder="Digite o texto"></textarea>
+    </div>
 
-// Iniciar cronômetro
-document.getElementById('start-btn').addEventListener('click', () => {
-    if (!isRunning) {
-        timer = setInterval(updateTimer, 1000);
-        isRunning = true;
+    <div class="button-container">
+        <button onclick="generatePage()">Gerar Página</button>
+    </div>
+</div>
+
+<div id="generated-page">
+    <div class="header-info">
+        <strong>Título:</strong> <span id="generated-title"></span><br>
+        <strong>Responsável:</strong> <span id="generated-responsible"></span><br>
+        <strong>Data:</strong> <span id="generated-date"></span>
+    </div>
+    <div id="generated-content"></div>
+</div>
+
+<script>
+    function generatePage() {
+        // Coleta as informações do formulário
+        const title = document.getElementById('title').value;
+        const responsible = document.getElementById('responsible').value;
+        const date = document.getElementById('date').value;
+        const text = document.getElementById('text-input').value;
+        const alignment = document.getElementById('image-alignment').value;
+        const imageInput = document.getElementById('image-upload');
+        const imageFile = imageInput.files[0];
+
+        // Atualiza o conteúdo gerado
+        document.getElementById('generated-title').textContent = title;
+        document.getElementById('generated-responsible').textContent = responsible;
+        document.getElementById('generated-date').textContent = date;
+
+        const generatedContent = document.getElementById('generated-content');
+        generatedContent.innerHTML = '';
+
+        const mediaItem = document.createElement('div');
+        mediaItem.classList.add('media-item');
+        if (alignment === 'left') mediaItem.classList.add('media-item-left');
+
+        const imageElement = document.createElement('img');
+        const objectURL = URL.createObjectURL(imageFile);
+        imageElement.src = objectURL;
+
+        const textElement = document.createElement('div');
+        textElement.classList.add('media-text');
+        textElement.textContent = text;
+
+        mediaItem.appendChild(imageElement);
+        mediaItem.appendChild(textElement);
+        generatedContent.appendChild(mediaItem);
+
+        // Habilitar a funcionalidade de mover as caixas de texto
+        enableDragAndDrop();
+
+        // Exibe a página gerada
+        document.getElementById('generated-page').style.display = 'block';
     }
-});
 
-// Parar cronômetro
-document.getElementById('stop-btn').addEventListener('click', () => {
-    clearInterval(timer);
-    isRunning = false;
-});
+    // Função para permitir arrastar as caixas de texto
+    function enableDragAndDrop() {
+        const textElements = document.querySelectorAll('.media-text');
 
-// Inserir sessão
-document.getElementById('insert-session').addEventListener('click', () => {
-    const session = document.createElement('div');
-    session.classList.add('session');
-    session.innerHTML = `
-        <h3>Sessão</h3>
-        <div class="session-content">
-            <div class="image-column"></div>
-            <div class="text-column"><textarea></textarea></div>
-        </div>
-    `;
-    document.getElementById('session-container').appendChild(session);
-});
+        textElements.forEach(textElement => {
+            textElement.addEventListener('mousedown', function(e) {
+                const textBox = e.target;
+                const offsetY = e.clientY - textBox.getBoundingClientRect().top;
+                
+                function onMouseMove(event) {
+                    textBox.style.position = 'absolute';
+                    textBox.style.top = (event.clientY - offsetY) + 'px';
+                }
 
-// Inserir treinamento (abre o pop-up)
-document.getElementById('insert-training').addEventListener('click', () => {
-    document.getElementById('training-popup').style.display = 'flex';
-});
+                function onMouseUp() {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                }
 
-// Fechar pop-up
-document.getElementById('close-popup').addEventListener('click', () => {
-    document.getElementById('training-popup').style.display = 'none';
-});
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+        });
+    }
+</script>
 
-// Salvar informações do treinamento
-document.getElementById('save-training').addEventListener('click', () => {
-    const it = document.getElementById('training-it').value;
-    const local = document.getElementById('training-local').value;
-    const setor = document.getElementById('training-setor').value;
-    const ministrante = document.getElementById('training-mininstrante').value;
-    const signature = document.getElementById('training-signature').value;
-    const time = document.getElementById('training-time').value;
-
-    const footer = document.getElementById('page-footer');
-    footer.innerHTML = `
-        <p><strong>IT:</strong> ${it}</p>
-        <p><strong>Local:</strong> ${local}</p>
-        <p><strong>Setor:</strong> ${setor}</p>
-        <p><strong>Ministrante:</strong> ${ministrante}</p>
-        <p><strong>Assinatura:</strong> ${signature}</p>
-        <p><strong>Tempo:</strong> ${time}</p>
-    `;
-
-    document.getElementById('training-popup').style.display = 'none';
-});
-
-    </script>
 </body>
 </html>
