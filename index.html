@@ -8,7 +8,7 @@
 </head>
     <style>
 
-       body {
+    body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -129,11 +129,43 @@ header {
 #training-table th {
     background-color: #f3f3f3;
 }
+
+/* Estilo para as seções */
+.section {
+    margin-bottom: 20px;
+    border: 1px dashed #ccc;
+    padding: 10px;
+}
+
+.section-title {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.section-content {
+    margin-top: 10px;
+}
+
+/* Estilo para a imagem dentro de um quadrado invisível */
+.image-box {
+    width: 8cm;
+    height: 8cm;
+    overflow: hidden;
+    display: inline-block;
+    position: relative;
+}
+
+.image-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
  
     </style>
 <body>
 <header>
-    <h1>Gerador de Página</h1>
+<h1>Gerador de Página</h1>
 </header>
 
 <div class="container">
@@ -187,6 +219,7 @@ header {
         <div class="popup-timer">
             <span id="timer">00:00</span>
         </div>
+        <button onclick="startStopTimer()">Iniciar/Parar Cronômetro</button>
         <button onclick="saveTraining()">Salvar</button>
         <button onclick="closeTrainingPopup()">Cancelar</button>
     </div>
@@ -212,9 +245,10 @@ header {
 <script src="script.js"></script>
     <script>
 
-        let trainingData = [];
+let trainingData = [];
 let timerInterval;
 let timeElapsed = 0;
+let isTimerRunning = false;
 
 function generatePage() {
     const title = document.getElementById('title').value;
@@ -237,6 +271,7 @@ function addSection() {
     const content = document.getElementById('content');
     const section = document.createElement('div');
     section.classList.add('section');
+    
     const sectionTitle = document.createElement('input');
     sectionTitle.placeholder = 'Título da Sessão';
     sectionTitle.classList.add('section-title');
@@ -265,8 +300,11 @@ function addImage() {
         if (file) {
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
-            img.onclick = () => img.remove();
-            section.appendChild(img);
+
+            const imageBox = document.createElement('div');
+            imageBox.classList.add('image-box');
+            imageBox.appendChild(img);
+            section.appendChild(imageBox);
         }
     };
     input.click();
@@ -280,6 +318,15 @@ function openTrainingPopup() {
 function closeTrainingPopup() {
     document.getElementById('training-popup').style.display = 'none';
     clearInterval(timerInterval);
+}
+
+function startStopTimer() {
+    if (isTimerRunning) {
+        clearInterval(timerInterval);
+    } else {
+        startTimer();
+    }
+    isTimerRunning = !isTimerRunning;
 }
 
 function startTimer() {
