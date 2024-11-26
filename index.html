@@ -243,81 +243,66 @@ header {
 </div>
 
 <script src="script.js"></script>
-    <script>
-
+<script>
+let sessionCount = 0;
 let trainingData = [];
 let timerInterval;
 let timeElapsed = 0;
 let isTimerRunning = false;
 
-function generatePage() {
-    const title = document.getElementById('title').value;
-    const responsible = document.getElementById('responsible').value;
-    const date = document.getElementById('date').value;
+function addSession() {
+    sessionCount++;
+    const title = prompt("Digite o título da sessão:");
+    const location = prompt("Digite o local da sessão:");
+    const sector = prompt("Digite o setor da sessão:");
+    const instructor = prompt("Digite o nome do instrutor:");
 
-    if (!title || !responsible || !date) {
-        alert("Por favor, preencha todas as informações!");
-        return;
+    if (title && location && sector && instructor) {
+        const sessionContainer = document.createElement('div');
+        sessionContainer.classList.add('session');
+
+        const sessionTitle = document.createElement('h3');
+        sessionTitle.textContent = `Sessão n. ${String(sessionCount).padStart(2, '0')}: "${title}"`;
+        sessionContainer.appendChild(sessionTitle);
+
+        const sessionContent = document.createElement('div');
+        sessionContent.classList.add('session-content');
+
+        const imgContainer = document.createElement('div');
+        imgContainer.classList.add('img-container');
+        const img = document.createElement('img');
+        img.src = 'path/to/image.jpg'; // Substitua pelo caminho da imagem
+        img.classList.add('session-image');
+        imgContainer.appendChild(img);
+
+        const textContainer = document.createElement('div');
+        textContainer.classList.add('text-container');
+        const textBox = document.createElement('textarea');
+        textBox.classList.add('session-text');
+        textBox.setAttribute('placeholder', 'Escreva aqui...');
+        textBox.style.height = 'auto';
+        textContainer.appendChild(textBox);
+
+        sessionContent.appendChild(imgContainer);
+        sessionContent.appendChild(textContainer);
+        sessionContainer.appendChild(sessionContent);
+
+        // Adicionando dados à tabela
+        const sessionData = {
+            title,
+            location,
+            sector,
+            instructor,
+            signature: '', // Defina ou obtenha a assinatura conforme necessário
+            time: '00:00', // Ajuste o tempo conforme necessário
+        };
+
+        trainingData.push(sessionData);
+        updateTrainingTable();
+        document.getElementById('sessions').appendChild(sessionContainer);
+    } else {
+        alert("Por favor, preencha todos os campos!");
     }
-
-    document.getElementById('header-title').textContent = "Título: " + title;
-    document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-    document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
-
-    document.getElementById('generated-page').style.display = "block";
-}
-
-function addSection() {
-    const content = document.getElementById('content');
-    const section = document.createElement('div');
-    section.classList.add('section');
-    
-    const sectionTitle = document.createElement('input');
-    sectionTitle.placeholder = 'Título da Sessão';
-    sectionTitle.classList.add('section-title');
-    section.appendChild(sectionTitle);
-
-    const sectionContent = document.createElement('div');
-    sectionContent.classList.add('section-content');
-    section.appendChild(sectionContent);
-    content.appendChild(section);
-}
-
-function addText() {
-    const section = document.querySelector('.section');
-    const textBox = document.createElement('div');
-    textBox.classList.add('text-box');
-    section.appendChild(textBox);
-}
-
-function addImage() {
-    const section = document.querySelector('.section');
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-        const file = input.files[0];
-        if (file) {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-
-            const imageBox = document.createElement('div');
-            imageBox.classList.add('image-box');
-            imageBox.appendChild(img);
-            section.appendChild(imageBox);
-        }
-    };
-    input.click();
-}
-
-function openTrainingPopup() {
-    document.getElementById('training-popup').style.display = 'flex';
-    startTimer();
-}
-
-function closeTrainingPopup() {
-    document.getElementById('training-popup').style.display = 'none';
-    clearInterval(timerInterval);
 }
 
 function startStopTimer() {
@@ -402,6 +387,11 @@ function downloadCSV() {
     link.click();
 }
 
-    </script>
+function closeTrainingPopup() {
+    document.getElementById('training-popup').style.display = 'none';
+    clearInterval(timerInterval);
+}
+
+</script>
 </body>
 </html>
