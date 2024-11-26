@@ -392,22 +392,36 @@ function closeTrainingModal() {
 }
 
 function saveTraining() {
-    const trainingTitle = document.getElementById('trainingTitle').value.trim();
-    const trainer = document.getElementById('trainer').value.trim();
-    const shift = document.getElementById('shift').value.trim();
-    const sector = document.getElementById('sector').value.trim();
-    const signature = document.getElementById('signature').value.trim();
-    const trainingTime = document.getElementById('trainingTime').value.trim();
+    // Captura o valor atual do cronômetro antes da validação
+    const timerDisplay = document.getElementById('timer');
+    const trainingTime = timerDisplay.textContent;
 
-    // Verifica se algum campo está vazio após remover espaços em branco
-    if (!trainingTitle || !trainer || !shift || !sector || !signature || !trainingTime) {
-        alert("Por favor, preencha todos os campos do treinamento.");
+    // Captura os valores do modal
+    const trainingTitle = document.getElementById('trainingTitle').value;
+    const trainer = document.getElementById('trainer').value;
+    const shift = document.getElementById('shift').value;
+    const sector = document.getElementById('sector').value;
+    const signature = document.getElementById('signature').value;
+
+    // Verifica se todos os campos estão preenchidos
+    if (!trainingTitle || !trainer || !shift || !sector || !signature || !trainingTime || trainingTime === "00:00") {
+        alert("Por favor, preencha todos os campos do treinamento e inicie o cronômetro.");
         return;
     }
 
-    alert("Treinamento salvo com sucesso!");
+    // Simula o salvamento dos dados
+    alert(`Treinamento salvo com sucesso!\n
+        Título: ${trainingTitle}\n
+        Treinador: ${trainer}\n
+        Turno: ${shift}\n
+        Setor: ${sector}\n
+        Assinatura: ${signature}\n
+        Duração: ${trainingTime}`);
+    
+    // Fecha o modal e reseta o cronômetro
     closeTrainingModal();
 }
+
 </script>
 </body>
 </html>
