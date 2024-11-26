@@ -1,154 +1,219 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplicação</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Aplicação de Sessões</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-    <style> 
-    body {
+    <style>
+        body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
 }
 
-#a4 {
-    width: 21cm;
-    height: 29.7cm;
-    margin: auto;
-    border: 1px solid #000;
-    position: relative;
+.section1 {
+    width: 100%;
+    padding: 10px;
+    background-color: #f1f1f1;
 }
 
-#page-buttons {
-    margin-bottom: 10px;
+.footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #333;
+    color: white;
+    padding: 10px;
+    text-align: center;
 }
 
 #page-footer {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
     text-align: center;
-    font-size: 12px;
+    padding: 20px;
 }
 
-.hidden {
-    display: none;
+.page-a4 {
+    width: 21cm;
+    min-height: 29.7cm;
+    padding: 20px;
+    margin: 0 auto;
+    background-color: #fff;
+    border: 1px solid #ddd;
+}
+
+.buttons-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.action-btn {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.action-btn:hover {
+    background-color: #45a049;
+}
+
+#session-container {
+    margin-top: 20px;
 }
 
 .popup {
+    display: none;
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 20px;
-    border: 1px solid #ccc;
-    background: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
+}
+
+.popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 400px;
+}
+
+.popup input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+}
+
+.popup button {
+    margin-top: 10px;
 }
 
     </style>
 <body>
-    <!-- Primeira Parte -->
-    <section id="config-section">
-        <h2>Configurações</h2>
-        <div>
-            <label for="footer-info">Informações do Rodapé:</label>
-            <textarea id="footer-info" placeholder="Digite informações para o rodapé..."></textarea>
-        </div>
-        <div id="timer">
-            <span id="time-display">00:00:00</span>
-            <button id="start-timer">Iniciar</button>
-            <button id="stop-timer">Parar</button>
-        </div>
-    </section>
 
-    <!-- Segunda Parte -->
-    <section id="page-section">
-        <div id="page-buttons">
-            <button id="add-session">Inserir Sessão</button>
-            <button id="add-image">Inserir Imagem</button>
-            <button id="add-text">Inserir Texto</button>
-            <button id="add-shape">Inserir Forma</button>
-            <button id="add-training">Inserir Treinamento</button>
-        </div>
-        <div id="page" class="a4">
-            <footer id="page-footer"></footer>
-        </div>
-    </section>
-
-    <!-- Pop-up para Treinamento -->
-    <div id="training-popup" class="popup hidden">
-        <h3>Inserir Treinamento</h3>
-        <label>IT: <input type="text" id="it"></label>
-        <label>Local: <input type="text" id="local"></label>
-        <label>Setor: <input type="text" id="setor"></label>
-        <label>Ministrante: <input type="text" id="ministrante"></label>
-        <label>Assinatura: <input type="text" id="assinatura"></label>
-        <label>Tempo: <input type="text" id="time"></label>
-        <button id="close-popup">Fechar</button>
+    <div class="section1">
+        <footer class="footer">
+            <div class="footer-content">
+                <span id="timer-display">00:00</span>
+                <button id="start-btn">Iniciar</button>
+                <button id="stop-btn">Parar</button>
+            </div>
+        </footer>
     </div>
 
-    <script src="scripts.js"></script>
+    <div class="section2">
+        <div class="page-a4">
+            <footer id="page-footer">
+                <!-- Rodapé dinâmico aqui -->
+            </footer>
+
+            <div class="buttons-container">
+                <button class="action-btn" id="insert-session">Inserir Sessão</button>
+                <button class="action-btn" id="insert-image">Inserir Imagem</button>
+                <button class="action-btn" id="insert-texts">Inserir Textos</button>
+                <button class="action-btn" id="insert-shape">Inserir Forma</button>
+                <button class="action-btn" id="insert-training">Inserir Treinamento</button>
+            </div>
+
+            <div id="session-container"></div>
+
+        </div>
+    </div>
+
+    <div id="training-popup" class="popup">
+        <div class="popup-content">
+            <h2>Informações do Treinamento</h2>
+            <label for="training-it">IT:</label><input type="text" id="training-it"><br>
+            <label for="training-local">Local:</label><input type="text" id="training-local"><br>
+            <label for="training-setor">Setor:</label><input type="text" id="training-setor"><br>
+            <label for="training-mininstrante">Ministrante:</label><input type="text" id="training-mininstrante"><br>
+            <label for="training-signature">Assinatura:</label><input type="text" id="training-signature"><br>
+            <label for="training-time">Tempo:</label><input type="text" id="training-time"><br>
+            <button id="save-training">Salvar</button>
+            <button id="close-popup">Fechar</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
     <script>
 
-        document.addEventListener("DOMContentLoaded", () => {
-    const footerInfo = document.getElementById("footer-info");
-    const pageFooter = document.getElementById("page-footer");
-    const startTimer = document.getElementById("start-timer");
-    const stopTimer = document.getElementById("stop-timer");
-    const timeDisplay = document.getElementById("time-display");
-    const addSession = document.getElementById("add-session");
-    const trainingPopup = document.getElementById("training-popup");
-    const closePopup = document.getElementById("close-popup");
+        let timer;
+let seconds = 0;
+let isRunning = false;
 
-    let timerInterval;
-    let seconds = 0;
+// Função para atualizar o cronômetro
+function updateTimer() {
+    let minutes = Math.floor(seconds / 60);
+    let secs = seconds % 60;
+    document.getElementById('timer-display').innerText = `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    seconds++;
+}
 
-    function formatTime(s) {
-        const hrs = String(Math.floor(s / 3600)).padStart(2, "0");
-        const mins = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
-        const secs = String(s % 60).padStart(2, "0");
-        return `${hrs}:${mins}:${secs}`;
+// Iniciar cronômetro
+document.getElementById('start-btn').addEventListener('click', () => {
+    if (!isRunning) {
+        timer = setInterval(updateTimer, 1000);
+        isRunning = true;
     }
+});
 
-    footerInfo.addEventListener("input", () => {
-        pageFooter.textContent = footerInfo.value;
-    });
+// Parar cronômetro
+document.getElementById('stop-btn').addEventListener('click', () => {
+    clearInterval(timer);
+    isRunning = false;
+});
 
-    startTimer.addEventListener("click", () => {
-        clearInterval(timerInterval);
-        timerInterval = setInterval(() => {
-            seconds++;
-            timeDisplay.textContent = formatTime(seconds);
-        }, 1000);
-    });
+// Inserir sessão
+document.getElementById('insert-session').addEventListener('click', () => {
+    const session = document.createElement('div');
+    session.classList.add('session');
+    session.innerHTML = `
+        <h3>Sessão</h3>
+        <div class="session-content">
+            <div class="image-column"></div>
+            <div class="text-column"><textarea></textarea></div>
+        </div>
+    `;
+    document.getElementById('session-container').appendChild(session);
+});
 
-    stopTimer.addEventListener("click", () => {
-        clearInterval(timerInterval);
-    });
+// Inserir treinamento (abre o pop-up)
+document.getElementById('insert-training').addEventListener('click', () => {
+    document.getElementById('training-popup').style.display = 'flex';
+});
 
-    addSession.addEventListener("click", () => {
-        const session = document.createElement("div");
-        session.innerHTML = `
-            <h4>Sessão</h4>
-            <div style="display: flex; gap: 10px;">
-                <div style="width: 8cm; height: 8cm; border: 1px solid #ccc;">Imagens</div>
-                <textarea style="flex: 1;" placeholder="Insira textos..."></textarea>
-            </div>
-        `;
-        document.getElementById("page").appendChild(session);
-    });
+// Fechar pop-up
+document.getElementById('close-popup').addEventListener('click', () => {
+    document.getElementById('training-popup').style.display = 'none';
+});
 
-    closePopup.addEventListener("click", () => {
-        trainingPopup.classList.add("hidden");
-    });
+// Salvar informações do treinamento
+document.getElementById('save-training').addEventListener('click', () => {
+    const it = document.getElementById('training-it').value;
+    const local = document.getElementById('training-local').value;
+    const setor = document.getElementById('training-setor').value;
+    const ministrante = document.getElementById('training-mininstrante').value;
+    const signature = document.getElementById('training-signature').value;
+    const time = document.getElementById('training-time').value;
 
-    document.getElementById("add-training").addEventListener("click", () => {
-        trainingPopup.classList.remove("hidden");
-    });
+    const footer = document.getElementById('page-footer');
+    footer.innerHTML = `
+        <p><strong>IT:</strong> ${it}</p>
+        <p><strong>Local:</strong> ${local}</p>
+        <p><strong>Setor:</strong> ${setor}</p>
+        <p><strong>Ministrante:</strong> ${ministrante}</p>
+        <p><strong>Assinatura:</strong> ${signature}</p>
+        <p><strong>Tempo:</strong> ${time}</p>
+    `;
+
+    document.getElementById('training-popup').style.display = 'none';
 });
 
     </script>
