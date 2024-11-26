@@ -119,6 +119,14 @@
             display: inline-block;
         }
 
+        .signature-canvas {
+            border: 1px dashed #ccc;
+            min-height: 100px;
+            margin-top: 10px;
+            width: 100%;
+            background-color: #f9f9f9;
+        }
+
         .button-container {
             display: flex;
             justify-content: center;
@@ -141,13 +149,6 @@
             background: #bbb;
         }
 
-        .arrow {
-            position: absolute;
-            width: 2px;
-            background: black;
-            z-index: 10;
-        }
-
         /* Pop-up Style */
         .popup {
             display: none;
@@ -165,13 +166,6 @@
             width: 100%;
             padding: 8px;
             margin: 10px 0;
-        }
-
-        /* Signature Field */
-        .signature {
-            border: 1px dashed #ccc;
-            min-height: 100px;
-            margin-top: 10px;
         }
 
         /* Hide when printing */
@@ -223,7 +217,7 @@
     <button onclick="addSection()">Adicionar Sessão</button>
     <button onclick="addText()">Adicionar Texto</button>
     <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="addArrow()">Adicionar Seta</button>
+    <button onclick="addSignature()">Adicionar Assinatura</button>
     <button onclick="showPopup()">Inserir Treinamento</button>
 </div>
 
@@ -248,7 +242,7 @@
     </div>
     <div class="form-group">
         <label for="signature">Assinatura:</label>
-        <textarea id="signature" class="signature" placeholder="Assine aqui"></textarea>
+        <canvas id="signature" class="signature-canvas"></canvas>
     </div>
     <div>
         <p id="timer">00:00</p>
@@ -272,9 +266,10 @@
     </table>
     <button onclick="downloadCSV()">Baixar CSV</button>
 </div>
+
 <script>
 
-let currentSection = null; // Variável para armazenar a seção atual
+    let currentSection = null; // Variável para armazenar a seção atual
 let timerInterval;
 let seconds = 0;
 let cronometroAtivo = false; // Para evitar que o cronômetro inicie múltiplas vezes
@@ -295,7 +290,7 @@ function generatePage() {
     document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
     document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
-    document.getElementById('generated-page').style.display = "block";
+    document.getElementById('generated-page').style.display = 'block';
 }
 
 // Adiciona uma nova seção
@@ -304,77 +299,72 @@ function addSection() {
     const section = document.createElement('div');
     section.classList.add('section');
 
-    const sectionTitle = document.createElement('input');
-    sectionTitle.classList.add('section-title');
-    sectionTitle.setAttribute('placeholder', 'Título da Seção');
-    section.appendChild(sectionTitle);
+    const title = document.createElement('input');
+    title.type = 'text';
+    title.placeholder = 'Título da Sessão';
+    title.classList.add('section-title');
 
     const sectionContent = document.createElement('div');
     sectionContent.classList.add('section-content');
 
-    const leftColumn = document.createElement('div');
-    leftColumn.classList.add('section-column');
-    sectionContent.appendChild(leftColumn);
-
-    const rightColumn = document.createElement('div');
-    rightColumn.classList.add('section-column');
-    sectionContent.appendChild(rightColumn);
-
+    section.appendChild(title);
     section.appendChild(sectionContent);
     content.appendChild(section);
-    currentSection = section;
+
+    currentSection = sectionContent; // Atualiza a seção atual
 }
 
-// Adiciona texto à seção
+// Adiciona uma caixa de texto à seção
 function addText() {
-    if (!currentSection) {
-        alert("Adicione uma seção antes de inserir texto.");
-        return;
-    }
-    const textBox = document.createElement('div');
+    if (!currentSection) return;
+
+    const textBox = document.createElement('textarea');
     textBox.classList.add('text-box');
-    textBox.contentEditable = "true";
-    textBox.textContent = "Digite o texto aqui";
-    currentSection.querySelector('.section-column:first-child').appendChild(textBox);
+    currentSection.appendChild(textBox);
 }
 
-// Adiciona imagem à seção
+// Adiciona uma imagem à seção
 function addImage() {
-    if (!currentSection) {
-        alert("Adicione uma seção antes de inserir uma imagem.");
-        return;
-    }
-    const img = document.createElement('img');
-    img.src = 'https://via.placeholder.com/150';
-    img.alt = 'Imagem';
-    img.onclick = () => alert('Clique para editar ou substituir a imagem.');
-    currentSection.querySelector('.section-column:last-child').appendChild(img);
+    if (!currentSection) return;
+
+    const imageInput = document.createElement('input');
+    imageInput.type = 'file';
+    imageInput.accept = 'image/*';
+    imageInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                currentSection.appendChild(img);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    currentSection.appendChild(imageInput);
 }
 
-// Adiciona canvas para assinatura
+// Adiciona uma assinatura à seção
 function addSignature() {
-    if (!currentSection) {
-        alert("Adicione uma seção antes de inserir uma assinatura.");
-        return;
-    }
+    if (!currentSection) return;
+
     const canvas = document.createElement('canvas');
     canvas.classList.add('signature-canvas');
-    canvas.width = 300;
-    canvas.height = 150;
-    const context = canvas.getContext('2d');
+    currentSection.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
     let isDrawing = false;
 
-    // Funções para desenhar
     canvas.addEventListener('mousedown', (e) => {
         isDrawing = true;
-        context.beginPath();
-        context.moveTo(e.offsetX, e.offsetY);
+        ctx.moveTo(e.offsetX, e.offsetY);
     });
 
     canvas.addEventListener('mousemove', (e) => {
         if (isDrawing) {
-            context.lineTo(e.offsetX, e.offsetY);
-            context.stroke();
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
         }
     });
 
@@ -385,105 +375,82 @@ function addSignature() {
     canvas.addEventListener('mouseout', () => {
         isDrawing = false;
     });
-
-    currentSection.querySelector('.section-column:last-child').appendChild(canvas);
 }
 
-// Exibe pop-up para inserir treinamento
+// Exibe o pop-up para inserir treinamento
 function showPopup() {
     document.getElementById('training-popup').style.display = 'block';
 }
 
-// Salva informações do treinamento
+// Salva o treinamento
 function saveTraining() {
     const title = document.getElementById('training-title').value;
     const location = document.getElementById('location').value;
     const sector = document.getElementById('sector').value;
     const instructor = document.getElementById('instructor').value;
-    const signature = document.getElementById('signature').value;
+    const signature = document.getElementById('signature');
 
-    if (!title || !location || !sector || !instructor) {
-        alert("Por favor, preencha todos os campos!");
+    if (!title || !location || !sector || !instructor || !signature) {
+        alert("Por favor, preencha todas as informações!");
         return;
     }
 
-    const table = document.getElementById('trainings-table').querySelector('tbody');
-    const row = table.insertRow();
-    row.insertCell(0).textContent = title;
-    row.insertCell(1).textContent = location;
-    row.insertCell(2).textContent = sector;
-    row.insertCell(3).textContent = instructor;
-    row.insertCell(4).textContent = signature;
-
+    const table = document.getElementById('trainings-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+    newRow.innerHTML = `<td>${title}</td><td>${location}</td><td>${sector}</td><td>${instructor}</td><td><img src="${signature.toDataURL()}" alt="Assinatura" width="50" height="50"></td>`;
     document.getElementById('training-popup').style.display = 'none';
-    document.getElementById('training-popup').querySelectorAll('input, textarea').forEach(input => input.value = '');
+
+    // Limpa os campos
+    document.getElementById('training-title').value = '';
+    document.getElementById('location').value = '';
+    document.getElementById('sector').value = '';
+    document.getElementById('instructor').value = '';
 }
 
-// Baixa os dados do treinamento como CSV
+// Inicia o cronômetro
+function startTimer() {
+    if (cronometroAtivo) return; // Se o cronômetro já estiver ativo, não faz nada
+
+    cronometroAtivo = true;
+    timerInterval = setInterval(() => {
+        seconds++;
+        document.getElementById('timer').textContent = formatTime(seconds);
+    }, 1000);
+}
+
+// Para o cronômetro
+function stopTimer() {
+    clearInterval(timerInterval);
+    cronometroAtivo = false;
+    cronometroValor = seconds;
+    seconds = 0; // Reseta o cronômetro visual
+}
+
+// Formata o tempo do cronômetro para "mm:ss"
+function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+// Baixa os treinamentos em formato CSV
 function downloadCSV() {
     const table = document.getElementById('trainings-table');
-    let csvContent = "";
-    const rows = table.querySelectorAll('tr');
+    let csv = '';
+    for (let row of table.rows) {
+        let rowData = [];
+        for (let cell of row.cells) {
+            rowData.push(cell.innerText || cell.textContent);
+        }
+        csv += rowData.join(',') + '\n';
+    }
 
-    rows.forEach(row => {
-        const cols = row.querySelectorAll('td, th');
-        const rowData = Array.from(cols).map(col => col.textContent).join(',');
-        csvContent += rowData + "\n";
-    });
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csv], { type: 'text/csv' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
     link.download = 'treinamentos.csv';
     link.click();
 }
-
-// Função para iniciar o cronômetro
-function startTimer() {
-    if (cronometroAtivo) return; // Impede múltiplos timers
-
-    cronometroAtivo = true;
-    timerInterval = setInterval(() => {
-        cronometroValor++;
-        document.getElementById('timer').textContent = formatTime(cronometroValor);
-    }, 1000);
-}
-
-// Função para parar o cronômetro
-function stopTimer() {
-    clearInterval(timerInterval);
-    cronometroAtivo = false;
-    saveTimeToSheet(cronometroValor); // Salva o tempo na planilha (tabela)
-}
-
-// Função para formatar o tempo
-function formatTime(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
-}
-
-// Função para salvar o tempo na planilha
-function saveTimeToSheet(timeInSeconds) {
-    const table = document.getElementById('trainings-table').querySelector('tbody');
-    const row = table.insertRow();
-    const timeCell = row.insertCell(0);
-    timeCell.textContent = formatTime(timeInSeconds); // Exibe o tempo no formato correto
-}
-
-// Função para adicionar seta interativa
-function addInteractiveArrow() {
-    const arrowContainer = document.createElement('div');
-    arrowContainer.classList.add('interactive-arrow');
-    const arrowElement = document.createElement('span');
-    arrowElement.textContent = '→';
-    arrowContainer.appendChild(arrowElement);
-    
-    arrowContainer.onclick = function () {
-        alert('Seta interativa clicada!');
-    };
-    
-    document.body.appendChild(arrowContainer);
-}
-
-</script>
+</scripe>
+    </body>
+    </html>
