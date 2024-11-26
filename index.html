@@ -1,309 +1,418 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Treinamento</title>
+    <title>Gerador de Página</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
-        .header, .modal-header, .modal-footer {
+
+        header {
             background-color: #4CAF50;
             color: white;
             padding: 10px;
-        }
-        .header {
             text-align: center;
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background: #f9f9f9;
         }
-        .content {
-            margin: 20px;
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #generated-page {
+            display: none;
+            margin: 20px auto;
+            width: 210mm;
+            height: 297mm;
+            background: white;
+            border: 1px solid #000;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-info {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+
+        .section {
             display: flex;
-            flex-wrap: wrap;
+            flex-direction: column;
+            align-items: stretch;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px dashed #aaa;
+            background: #f3f3f3;
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-align: center;
+            background: #f3f3f3;
+            width: 100%;
+            border: none;
+        }
+
+        .section-content {
+            display: flex;
             gap: 10px;
         }
-        .section {
-            background-color: #f0f0f0;
-            padding: 10px;
-            border-radius: 5px;
-            width: 100%;
-        }
+
         .section-column {
-            width: 100%;
+            flex: 1;
+            min-width: 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .section-title, .text-box {
+
+        .section-column img,
+        .section-column video {
+            max-width: 8cm;
+            max-height: 8cm;
+            object-fit: contain;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+
+        .text-box {
             width: 100%;
-            padding: 10px;
+            max-width: 8cm;
+            min-height: 50px;
+            border: 1px dashed #ccc;
+            padding: 5px;
+            resize: vertical;
+            word-wrap: break-word;
+            overflow: hidden;
+            white-space: pre-wrap;
+            box-sizing: border-box;
+            display: inline-block;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
             margin-top: 10px;
         }
+
+        .button-container button {
+            background: none;
+            border: 1px dashed #aaa;
+            padding: 5px 10px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .button-container button:hover {
+            background: #ddd;
+        }
+
+        .button-container button:active {
+            background: #bbb;
+        }
+
         .arrow {
-            width: 20px;
-            height: 20px;
-            background-color: black;
-            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-            margin: 10px;
+            position: absolute;
+            width: 2px;
+            background: black;
+            z-index: 10;
         }
-        .timer-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .timer {
-            font-size: 24px;
-        }
+
         .modal {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
             justify-content: center;
             align-items: center;
         }
+
         .modal-content {
-            background-color: white;
+            background: white;
             padding: 20px;
-            border-radius: 5px;
-            width: 80%;
-            max-width: 600px;
+            border-radius: 10px;
+            width: 400px;
         }
-        .form-group {
-            margin-bottom: 10px;
-        }
-        .form-group input, .form-group select {
+
+        .modal-content input {
             width: 100%;
-            padding: 8px;
-        }
-        .form-group button {
             padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .modal-content button {
+            padding: 10px 20px;
             background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .table-container {
-            margin-top: 20px;
-            overflow-x: auto;
+
+        .modal-content button:hover {
+            background-color: #45a049;
         }
+
         table {
             width: 100%;
+            margin-top: 20px;
             border-collapse: collapse;
         }
+
         table, th, td {
             border: 1px solid #ddd;
         }
+
         th, td {
             padding: 10px;
-            text-align: center;
+            text-align: left;
         }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
     </style>
 </head>
 <body>
+<header>
+    <h1>Gerador de Página</h1>
+</header>
 
-    <!-- Header -->
-    <div class="header">
-        <h1>Cadastro de Treinamento</h1>
+<div class="container">
+    <div class="form-group">
+        <label for="title">Título:</label>
+        <input type="text" id="title" placeholder="Digite o título">
     </div>
 
-    <!-- Content -->
-    <div class="content" id="content">
-        <!-- Sessões serão adicionadas aqui -->
+    <div class="form-group">
+        <label for="responsible">Responsável:</label>
+        <input type="text" id="responsible" placeholder="Digite o responsável">
     </div>
 
-    <!-- Timer -->
-    <div class="timer-container">
-        <button onclick="startTimer()">Iniciar Cronômetro</button>
-        <span class="timer" id="timer">00:00</span>
-        <button onclick="stopTimer()">Parar Cronômetro</button>
+    <div class="form-group">
+        <label for="date">Data:</label>
+        <input type="date" id="date">
     </div>
 
-    <!-- Modal de Treinamento -->
-    <div class="modal" id="trainingModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Cadastrar Treinamento</h2>
-                <button onclick="closeTrainingModal()">Fechar</button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="trainingTitle">Título do Treinamento</label>
-                    <input type="text" id="trainingTitle">
-                </div>
-                <div class="form-group">
-                    <label for="trainer">Ministrante</label>
-                    <input type="text" id="trainer">
-                </div>
-                <div class="form-group">
-                    <label for="shift">Turno</label>
-                    <select id="shift">
-                        <option value="manhã">Manhã</option>
-                        <option value="tarde">Tarde</option>
-                        <option value="noite">Noite</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="sector">Setor</label>
-                    <input type="text" id="sector">
-                </div>
-                <div class="form-group">
-                    <label for="signature">Assinatura</label>
-                    <input type="text" id="signature">
-                </div>
-                <div class="form-group">
-                    <button onclick="saveTraining()">Salvar</button>
-                </div>
-            </div>
-        </div>
+    <button onclick="generatePage()">Gerar Página</button>
+</div>
+
+<div id="generated-page">
+    <div class="header-info">
+        <div id="header-title"></div>
+        <div id="header-responsible"></div>
+        <div id="header-date"></div>
     </div>
+    <div id="content"></div>
+</div>
 
-    <!-- Tabela de Treinamentos -->
-    <div class="table-container">
-        <table id="trainingTable">
-            <thead>
-                <tr>
-                    <th>Título</th>
-                    <th>Ministrante</th>
-                    <th>Turno</th>
-                    <th>Setor</th>
-                    <th>Assinatura</th>
-                    <th>Tempo</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+<div class="button-container">
+    <button onclick="addSection()">Adicionar Sessão</button>
+    <button onclick="addText()">Adicionar Texto</button>
+    <button onclick="addImage()">Adicionar Imagem</button>
+    <button onclick="addArrow()">Adicionar Seta</button>
+    <button onclick="openTrainingModal()">Treinamento</button>
+    <button onclick="startTimer()">Iniciar Cronômetro</button>
+</div>
+
+<!-- Modal de Treinamento -->
+<div id="trainingModal" class="modal">
+    <div class="modal-content">
+        <h3>Informações do Treinamento</h3>
+        <input type="text" id="trainingTitle" placeholder="Título do Treinamento">
+        <input type="text" id="trainer" placeholder="Ministrante">
+        <input type="text" id="shift" placeholder="Turno">
+        <input type="text" id="sector" placeholder="Setor">
+        <input type="text" id="signature" placeholder="Assinatura">
+        <div id="timer">00:00</div>
+        <button onclick="saveTraining()">Salvar</button>
+        <button onclick="closeTrainingModal()">Fechar</button>
     </div>
+</div>
 
-    <script>
-        let timerInterval;
-        let seconds = 0;
-        let isTimerRunning = false;
+<!-- Tabela de Treinamentos -->
+<table id="trainingTable">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Ministrante</th>
+            <th>Turno</th>
+            <th>Setor</th>
+            <th>Assinatura</th>
+            <th>Tempo de Treinamento</th>
+            <th>Download CSV</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Os dados do treinamento serão inseridos aqui -->
+    </tbody>
+</table>
 
-        function addSection() {
-            const content = document.getElementById('content');
-            const section = document.createElement('div');
-            section.classList.add('section');
-            const sectionTitle = document.createElement('input');
-            sectionTitle.classList.add('section-title');
-            sectionTitle.placeholder = "Título da Seção";
-            section.appendChild(sectionTitle);
-            content.appendChild(section);
+<script>
+    let timerInterval;
+    let seconds = 0;
+    let isTimerRunning = false;
+
+    function generatePage() {
+        const title = document.getElementById('title').value;
+        const responsible = document.getElementById('responsible').value;
+        const date = document.getElementById('date').value;
+
+        if (!title || !responsible || !date) {
+            alert("Por favor, preencha todas as informações!");
+            return;
         }
 
-        function addText() {
-            const content = document.getElementById('content');
-            const sectionColumn = document.createElement('div');
-            sectionColumn.classList.add('section-column');
-            const textBox = document.createElement('textarea');
-            textBox.classList.add('text-box');
-            sectionColumn.appendChild(textBox);
-            content.appendChild(sectionColumn);
+        document.getElementById('header-title').textContent = "Título: " + title;
+        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
+
+        document.getElementById('generated-page').style.display = "block";
+    }
+
+    function addSection() {
+        const content = document.getElementById('content');
+        const section = document.createElement('div');
+        section.classList.add('section');
+        const sectionTitle = document.createElement('input');
+        sectionTitle.classList.add('section-title');
+        sectionTitle.placeholder = "Título da Seção";
+        section.appendChild(sectionTitle);
+        content.appendChild(section);
+    }
+
+    function addText() {
+        const content = document.getElementById('content');
+        const sectionColumn = document.createElement('div');
+        sectionColumn.classList.add('section-column');
+        const textBox = document.createElement('textarea');
+        textBox.classList.add('text-box');
+        sectionColumn.appendChild(textBox);
+        content.appendChild(sectionColumn);
+    }
+
+    function addImage() {
+        const content = document.getElementById('content');
+        const sectionColumn = document.createElement('div');
+        sectionColumn.classList.add('section-column');
+        const image = document.createElement('img');
+        image.src = 'https://via.placeholder.com/150';
+        image.alt = "Imagem Exemplo";
+        sectionColumn.appendChild(image);
+        content.appendChild(sectionColumn);
+    }
+
+    function addArrow() {
+        const content = document.getElementById('content');
+        const arrow = document.createElement('div');
+        arrow.classList.add('arrow');
+        content.appendChild(arrow);
+    }
+
+    function openTrainingModal() {
+        document.getElementById('trainingModal').style.display = 'flex';
+    }
+
+    function closeTrainingModal() {
+        document.getElementById('trainingModal').style.display = 'none';
+    }
+
+    function startTimer() {
+        if (!isTimerRunning) {
+            isTimerRunning = true;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
+
+    function updateTimer() {
+        seconds++;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    }
+
+    function saveTraining() {
+        const trainingTitle = document.getElementById('trainingTitle').value;
+        const trainer = document.getElementById('trainer').value;
+        const shift = document.getElementById('shift').value;
+        const sector = document.getElementById('sector').value;
+        const signature = document.getElementById('signature').value;
+        const trainingTime = document.getElementById('timer').textContent;
+
+        if (!trainingTitle || !trainer || !shift || !sector || !signature || trainingTime === "00:00") {
+            alert("Por favor, preencha todos os campos do treinamento e inicie o cronômetro.");
+            return;
         }
 
-        function addImage() {
-            const content = document.getElementById('content');
-            const sectionColumn = document.createElement('div');
-            sectionColumn.classList.add('section-column');
-            const image = document.createElement('img');
-            image.src = 'https://via.placeholder.com/150';
-            image.alt = "Imagem Exemplo";
-            sectionColumn.appendChild(image);
-            content.appendChild(sectionColumn);
-        }
+        const table = document.getElementById('trainingTable').getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow();
 
-        function addArrow() {
-            const content = document.getElementById('content');
-            const arrow = document.createElement('div');
-            arrow.classList.add('arrow');
-            content.appendChild(arrow);
-        }
+        newRow.insertCell(0).textContent = trainingTitle;
+        newRow.insertCell(1).textContent = trainer;
+        newRow.insertCell(2).textContent = shift;
+        newRow.insertCell(3).textContent = sector;
+        newRow.insertCell(4).textContent = signature;
+        newRow.insertCell(5).textContent = trainingTime;
+        newRow.insertCell(6).innerHTML = `<button onclick="downloadCSV()">Baixar CSV</button>`;
 
-        function openTrainingModal() {
-            document.getElementById('trainingModal').style.display = 'flex';
-        }
+        closeTrainingModal();
+    }
 
-        function closeTrainingModal() {
-            document.getElementById('trainingModal').style.display = 'none';
-        }
-
-        function startTimer() {
-            if (!isTimerRunning) {
-                isTimerRunning = true;
-                timerInterval = setInterval(updateTimer, 1000);
+    function downloadCSV() {
+        const table = document.getElementById('trainingTable');
+        let csvContent = '';
+        
+        for (let row of table.rows) {
+            let rowData = [];
+            for (let cell of row.cells) {
+                rowData.push(cell.textContent);
             }
+            csvContent += rowData.join(',') + '\n';
         }
 
-        function stopTimer() {
-            if (isTimerRunning) {
-                clearInterval(timerInterval);
-                isTimerRunning = false;
-            }
-        }
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'treinamentos.csv';
+        link.click();
+    }
+</script>
 
-        function updateTimer() {
-            seconds++;
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-        }
-
-        function saveTraining() {
-            const trainingTitle = document.getElementById('trainingTitle').value;
-            const trainer = document.getElementById('trainer').value;
-            const shift = document.getElementById('shift').value;
-            const sector = document.getElementById('sector').value;
-            const signature = document.getElementById('signature').value;
-            const trainingTime = document.getElementById('timer').textContent;
-
-            if (!trainingTitle || !trainer || !shift || !sector || !signature || trainingTime === "00:00") {
-                alert("Por favor, preencha todos os campos do treinamento e inicie o cronômetro.");
-                return;
-            }
-
-            const table = document.getElementById('trainingTable').getElementsByTagName('tbody')[0];
-            const newRow = table.insertRow();
-
-            newRow.insertCell(0).textContent = trainingTitle;
-            newRow.insertCell(1).textContent = trainer;
-            newRow.insertCell(2).textContent = shift;
-            newRow.insertCell(3).textContent = sector;
-            newRow.insertCell(4).textContent = signature;
-            newRow.insertCell(5).textContent = trainingTime;
-            newRow.insertCell(6).innerHTML = '<button onclick="deleteTraining(this)">Excluir</button>';
-            
-            closeTrainingModal();
-        }
-
-        function deleteTraining(button) {
-            const row = button.parentElement.parentElement;
-            row.remove();
-        }
-
-        function exportToCSV() {
-            const rows = Array.from(document.querySelectorAll('table tr'));
-            const csvContent = rows.map(row => {
-                const cells = Array.from(row.querySelectorAll('th, td'));
-                return cells.map(cell => `"${cell.textContent.replace(/"/g, '""')}"`).join(',');
-            }).join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'treinamentos.csv';
-            link.click();
-        }
-
-        // Adiciona uma seção por padrão
-        addSection();
-    </script>
 </body>
 </html>
