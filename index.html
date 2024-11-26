@@ -277,6 +277,8 @@
 let currentSection = null; // Variável para armazenar a seção atual
 let timerInterval;
 let seconds = 0;
+let cronometroAtivo = false; // Para evitar que o cronômetro inicie múltiplas vezes
+let cronometroValor = 0; // Para armazenar o tempo do cronômetro
 
 // Gera o conteúdo da página
 function generatePage() {
@@ -349,15 +351,42 @@ function addImage() {
     currentSection.querySelector('.section-column:last-child').appendChild(img);
 }
 
-// Adiciona seta entre elementos
-function addArrow() {
+// Adiciona canvas para assinatura
+function addSignature() {
     if (!currentSection) {
-        alert("Adicione uma seção antes de inserir uma seta.");
+        alert("Adicione uma seção antes de inserir uma assinatura.");
         return;
     }
-    const arrow = document.createElement('div');
-    arrow.classList.add('arrow');
-    currentSection.appendChild(arrow);
+    const canvas = document.createElement('canvas');
+    canvas.classList.add('signature-canvas');
+    canvas.width = 300;
+    canvas.height = 150;
+    const context = canvas.getContext('2d');
+    let isDrawing = false;
+
+    // Funções para desenhar
+    canvas.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        context.beginPath();
+        context.moveTo(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+        if (isDrawing) {
+            context.lineTo(e.offsetX, e.offsetY);
+            context.stroke();
+        }
+    });
+
+    canvas.addEventListener('mouseup', () => {
+        isDrawing = false;
+    });
+
+    canvas.addEventListener('mouseout', () => {
+        isDrawing = false;
+    });
+
+    currentSection.querySelector('.section-column:last-child').appendChild(canvas);
 }
 
 // Exibe pop-up para inserir treinamento
@@ -411,18 +440,20 @@ function downloadCSV() {
 
 // Função para iniciar o cronômetro
 function startTimer() {
-    if (timerInterval) return; // Impede múltiplos timers
+    if (cronometroAtivo) return; // Impede múltiplos timers
 
+    cronometroAtivo = true;
     timerInterval = setInterval(() => {
-        seconds++;
-        document.getElementById('timer').textContent = formatTime(seconds);
+        cronometroValor++;
+        document.getElementById('timer').textContent = formatTime(cronometroValor);
     }, 1000);
 }
 
 // Função para parar o cronômetro
 function stopTimer() {
     clearInterval(timerInterval);
-    timerInterval = null;
+    cronometroAtivo = false;
+    saveTimeToSheet(cronometroValor); // Salva o tempo na planilha (tabela)
 }
 
 // Função para formatar o tempo
@@ -430,6 +461,14 @@ function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+}
+
+// Função para salvar o tempo na planilha
+function saveTimeToSheet(timeInSeconds) {
+    const table = document.getElementById('trainings-table').querySelector('tbody');
+    const row = table.insertRow();
+    const timeCell = row.insertCell(0);
+    timeCell.textContent = formatTime(timeInSeconds); // Exibe o tempo no formato correto
 }
 
 // Função para adicionar seta interativa
@@ -446,6 +485,5 @@ function addInteractiveArrow() {
     
     document.body.appendChild(arrowContainer);
 }
-
 
 </script>
