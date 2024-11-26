@@ -117,7 +117,6 @@
             white-space: pre-wrap;
             box-sizing: border-box;
             display: inline-block;
-            cursor: move;
         }
 
         .button-container {
@@ -259,9 +258,6 @@
         textBox.classList.add('text-box');
         textBox.contentEditable = "true";
         column2.appendChild(textBox);
-
-        // Enable dragging
-        makeDraggable(textBox);
     }
 
     function addImage() {
@@ -296,48 +292,38 @@
             const imageHeight = lastImage.offsetHeight;
 
             textBoxes.forEach(textBox => {
-                textBox.style.marginTop = `${imageHeight + 10}px`;
+                textBox.style.marginTop = ${imageHeight + 10}px;
             });
         }
     }
 
-    function makeDraggable(element) {
-        let offsetY;
-        let initialY;
-
-        element.onmousedown = function(e) {
-            e.preventDefault();
-
-            initialY = e.clientY;
-            offsetY = element.offsetTop;
-
-            document.onmousemove = function(e) {
-                let dy = e.clientY - initialY;
-                element.style.top = offsetY + dy + "px";
-            };
-
-            document.onmouseup = function() {
-                document.onmousemove = null;
-                document.onmouseup = null;
-            };
+    function addArrow() {
+        const section = currentSection;
+        section.onmousedown = (e) => {
+            if (!point1) {
+                point1 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
+            } else {
+                const point2 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
+                drawArrow(point1, point2);
+                point1 = null;
+            }
         };
     }
 
-    function addArrow() {
-        const content = document.getElementById('content');
+    function drawArrow(point1, point2) {
+        const section = currentSection;
         const arrow = document.createElement('div');
-        arrow.classList.add('arrow');
-        arrow.style.height = "50px"; // A largura da seta vai ser fixa
-        content.appendChild(arrow);
+        const dx = point2.x - point1.x;
+        const dy = point2.y - point1.y;
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
 
-        if (!isDrawingArrow) {
-            startArrow = arrow;
-            isDrawingArrow = true;
-        } else {
-            point1 = arrow;
-            startArrow.style.width = "50px";
-            startArrow.style.height = "50px"; // Define a altura da seta
-        }
+        arrow.classList.add('arrow');
+        arrow.style.height = Math.sqrt(dx * dx + dy * dy) + 'px';
+        arrow.style.transform = rotate(${angle}deg);
+        arrow.style.top = point1.y + 'px';
+        arrow.style.left = point1.x + 'px';
+
+        section.appendChild(arrow);
     }
 </script>
 </body>
