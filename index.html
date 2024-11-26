@@ -392,13 +392,14 @@ function closeTrainingModal() {
 }
 
 function saveTraining() {
-    const trainingTitle = document.getElementById('trainingTitle').value;
-    const trainer = document.getElementById('trainer').value;
-    const shift = document.getElementById('shift').value;
-    const sector = document.getElementById('sector').value;
-    const signature = document.getElementById('signature').value;
-    const trainingTime = document.getElementById('trainingTime').value;
+    const trainingTitle = document.getElementById('trainingTitle').value.trim();
+    const trainer = document.getElementById('trainer').value.trim();
+    const shift = document.getElementById('shift').value.trim();
+    const sector = document.getElementById('sector').value.trim();
+    const signature = document.getElementById('signature').value.trim();
+    const trainingTime = document.getElementById('trainingTime').value.trim();
 
+    // Verifica se algum campo está vazio após remover espaços em branco
     if (!trainingTitle || !trainer || !shift || !sector || !signature || !trainingTime) {
         alert("Por favor, preencha todos os campos do treinamento.");
         return;
