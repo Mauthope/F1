@@ -242,156 +242,164 @@ header {
     </table>
 </div>
 
-<script src="script.js"></script>
-  <script>
-        let sessionCount = 0;
-        let trainingData = [];
-        let timerInterval;
-        let timeElapsed = 0;
-        let isTimerRunning = false;
+<script src="script.js"
+    
+  let trainingData = [];
+let timerInterval;
+let timeElapsed = 0;
+let isTimerRunning = false;
 
-        function addSession() {
-            sessionCount++;
-            const title = prompt("Digite o título da sessão:");
-            const location = prompt("Digite o local da sessão:");
-            const sector = prompt("Digite o setor da sessão:");
-            const instructor = prompt("Digite o nome do instrutor:");
+function generatePage() {
+    const title = document.getElementById('title').value;
+    const responsible = document.getElementById('responsible').value;
+    const date = document.getElementById('date').value;
 
-            if (title && location && sector && instructor) {
-                const sessionContainer = document.createElement('div');
-                sessionContainer.classList.add('session');
+    if (!title || !responsible || !date) {
+        alert("Por favor, preencha todas as informações!");
+        return;
+    }
 
-                // Título da sessão numerado
-                const sessionTitle = document.createElement('h3');
-                sessionTitle.textContent = `Sessão n. ${String(sessionCount).padStart(2, '0')}: "${title}"`;
-                sessionContainer.appendChild(sessionTitle);
+    document.getElementById('header-title').textContent = "Título: " + title;
+    document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+    document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
-                const sessionContent = document.createElement('div');
-                sessionContent.classList.add('session-content');
+    document.getElementById('generated-page').style.display = "block";
+}
 
-                // Imagem
-                const imgContainer = document.createElement('div');
-                imgContainer.classList.add('img-container');
-                const img = document.createElement('img');
-                img.src = 'path/to/image.jpg'; // Substitua pelo caminho da imagem
-                img.classList.add('session-image');
-                imgContainer.appendChild(img);
+function addSection() {
+    const content = document.getElementById('content');
+    const section = document.createElement('div');
+    section.classList.add('section');
+    
+    const sectionTitle = document.createElement('input');
+    sectionTitle.placeholder = 'Título da Sessão';
+    sectionTitle.classList.add('section-title');
+    section.appendChild(sectionTitle);
 
-                // Caixa de texto
-                const textContainer = document.createElement('div');
-                textContainer.classList.add('text-container');
-                const textBox = document.createElement('textarea');
-                textBox.classList.add('session-text');
-                textBox.setAttribute('placeholder', 'Escreva aqui...');
-                textContainer.appendChild(textBox);
+    const sectionContent = document.createElement('div');
+    sectionContent.classList.add('section-content');
+    section.appendChild(sectionContent);
+    content.appendChild(section);
+}
 
-                sessionContent.appendChild(imgContainer);
-                sessionContent.appendChild(textContainer);
-                sessionContainer.appendChild(sessionContent);
+function addText() {
+    const section = document.querySelector('.section');
+    const textBox = document.createElement('div');
+    textBox.classList.add('text-box');
+    section.appendChild(textBox);
+}
 
-                // Adicionando dados à tabela (aqui estamos apenas armazenando, mas não exibindo em uma tabela visual ainda)
-                const sessionData = {
-                    title,
-                    location,
-                    sector,
-                    instructor,
-                    signature: '', // Defina ou obtenha a assinatura conforme necessário
-                    time: '00:00', // Ajuste o tempo conforme necessário
-                };
+function addImage() {
+    const section = document.querySelector('.section');
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        const file = input.files[0];
+        if (file) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
 
-                trainingData.push(sessionData);
-                document.getElementById('sessions').appendChild(sessionContainer);
-            } else {
-                alert("Por favor, preencha todos os campos!");
-            }
+            const imageBox = document.createElement('div');
+            imageBox.classList.add('image-box');
+            imageBox.appendChild(img);
+            section.appendChild(imageBox);
         }
+    };
+    input.click();
+}
 
-        function startStopTimer() {
-            if (isTimerRunning) {
-                clearInterval(timerInterval);
-            } else {
-                startTimer();
-            }
-            isTimerRunning = !isTimerRunning;
-        }
+function openTrainingPopup() {
+    document.getElementById('training-popup').style.display = 'flex';
+    startTimer();
+}
 
-        function startTimer() {
-            timerInterval = setInterval(() => {
-                timeElapsed++;
-                const minutes = Math.floor(timeElapsed / 60);
-                const seconds = timeElapsed % 60;
-                document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            }, 1000);
-        }
+function closeTrainingPopup() {
+    document.getElementById('training-popup').style.display = 'none';
+    clearInterval(timerInterval);
+}
 
-        function saveTraining() {
-            const title = document.getElementById('training-title').value;
-            const location = document.getElementById('training-location').value;
-            const sector = document.getElementById('training-sector').value;
-            const instructor = document.getElementById('training-instructor').value;
-            const signatureCanvas = document.getElementById('training-signature');
-            const signatureData = signatureCanvas.toDataURL();
+function startStopTimer() {
+    if (isTimerRunning) {
+        clearInterval(timerInterval);
+    } else {
+        startTimer();
+    }
+    isTimerRunning = !isTimerRunning;
+}
 
-            if (title && location && sector && instructor) {
-                trainingData.push({
-                    title,
-                    location,
-                    sector,
-                    instructor,
-                    signature: signatureData,
-                    time: document.getElementById('timer').textContent,
-                });
+function startTimer() {
+    timerInterval = setInterval(() => {
+        timeElapsed++;
+        const minutes = Math.floor(timeElapsed / 60);
+        const seconds = timeElapsed % 60;
+        document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }, 1000);
+}
 
-                updateTrainingTable();
-                closeTrainingPopup();
-            } else {
-                alert("Por favor, preencha todos os campos!");
-            }
-        }
+function saveTraining() {
+    const title = document.getElementById('training-title').value;
+    const location = document.getElementById('training-location').value;
+    const sector = document.getElementById('training-sector').value;
+    const instructor = document.getElementById('training-instructor').value;
+    const signatureCanvas = document.getElementById('training-signature');
+    const signatureData = signatureCanvas.toDataURL();
 
-        function updateTrainingTable() {
-            const tableBody = document.querySelector('#training-table tbody');
-            tableBody.innerHTML = '';
-            trainingData.forEach(training => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${training.title}</td>
-                    <td>${training.location}</td>
-                    <td>${training.sector}</td>
-                    <td>${training.instructor}</td>
-                    <td><img src="${training.signature}" alt="Assinatura" width="50" height="50"></td>
-                    <td>${training.time}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+    if (title && location && sector && instructor) {
+        trainingData.push({
+            title,
+            location,
+            sector,
+            instructor,
+            signature: signatureData,
+            time: document.getElementById('timer').textContent,
+        });
 
-        function downloadCSV() {
-            const csvContent = [
-                ["Título", "Local", "Setor", "Ministrante", "Assinatura", "Tempo"],
-                ...trainingData.map(t => [
-                    t.title, 
-                    t.location, 
-                    t.sector, 
-                    t.instructor, 
-                    t.signature, 
-                    t.time
-                ])
-            ]
-            .map(e => e.join(","))
-            .join("\n");
+        updateTrainingTable();
+        closeTrainingPopup();
+    } else {
+        alert("Por favor, preencha todos os campos!");
+    }
+}
 
-            const blob = new Blob([csvContent], { type: 'text/csv' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "treinamentos.csv";
-            link.click();
-        }
+function updateTrainingTable() {
+    const tableBody = document.querySelector('#training-table tbody');
+    tableBody.innerHTML = '';
+    trainingData.forEach(training => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${training.title}</td>
+            <td>${training.location}</td>
+            <td>${training.sector}</td>
+            <td>${training.instructor}</td>
+            <td><img src="${training.signature}" alt="Assinatura" width="50" height="50"></td>
+            <td>${training.time}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
 
-        function closeTrainingPopup() {
-            document.getElementById('training-popup').style.display = 'none';
-            clearInterval(timerInterval);
-        }
-    </script>
+function downloadCSV() {
+    const csvContent = [
+        ["Título", "Local", "Setor", "Ministrante", "Assinatura", "Tempo"],
+        ...trainingData.map(t => [
+            t.title, 
+            t.location, 
+            t.sector, 
+            t.instructor, 
+            t.signature, 
+            t.time
+        ])
+    ]
+    .map(e => e.join(","))
+    .join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "treinamentos.csv";
+    link.click();
+}
+</script>
 </body>
 </html>
