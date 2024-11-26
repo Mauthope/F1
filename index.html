@@ -148,7 +148,7 @@
             z-index: 10;
         }
 
-        #trainingModal {
+        .modal {
             display: none;
             position: fixed;
             top: 0;
@@ -160,17 +160,53 @@
             align-items: center;
         }
 
-        #trainingModalContent {
+        .modal-content {
             background: white;
             padding: 20px;
-            border-radius: 5px;
-            width: 300px;
+            border-radius: 10px;
+            width: 400px;
         }
 
-        #trainingModalContent input, #trainingModalContent button {
-            margin-bottom: 10px;
+        .modal-content input {
             width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
+
+        .modal-content button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .modal-content button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
     </style>
 </head>
 <body>
@@ -211,217 +247,172 @@
     <button onclick="addText()">Adicionar Texto</button>
     <button onclick="addImage()">Adicionar Imagem</button>
     <button onclick="addArrow()">Adicionar Seta</button>
-    <button onclick="startTimer()">Iniciar Cronômetro</button>
     <button onclick="openTrainingModal()">Treinamento</button>
+    <button onclick="startTimer()">Iniciar Cronômetro</button>
 </div>
 
-<!-- Modal for Training -->
-<div id="trainingModal">
-    <div id="trainingModalContent">
-        <h3>Cadastro de Treinamento</h3>
+<!-- Modal de Treinamento -->
+<div id="trainingModal" class="modal">
+    <div class="modal-content">
+        <h3>Informações do Treinamento</h3>
         <input type="text" id="trainingTitle" placeholder="Título do Treinamento">
         <input type="text" id="trainer" placeholder="Ministrante">
         <input type="text" id="shift" placeholder="Turno">
         <input type="text" id="sector" placeholder="Setor">
         <input type="text" id="signature" placeholder="Assinatura">
-        <input type="hidden" id="trainingTime">
+        <div id="timer">00:00</div>
         <button onclick="saveTraining()">Salvar</button>
         <button onclick="closeTrainingModal()">Fechar</button>
     </div>
 </div>
 
+<!-- Tabela de Treinamentos -->
+<table id="trainingTable">
+    <thead>
+        <tr>
+            <th>Título</th>
+            <th>Ministrante</th>
+            <th>Turno</th>
+            <th>Setor</th>
+            <th>Assinatura</th>
+            <th>Tempo de Treinamento</th>
+            <th>Download CSV</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Os dados do treinamento serão inseridos aqui -->
+    </tbody>
+</table>
+
 <script>
-  let currentSection = null;
-let imageIndex = 0; // Contador para controlar a inserção e alinhamento das imagens
-let timerInterval;
-let startTime;
+    let timerInterval;
+    let seconds = 0;
+    let isTimerRunning = false;
 
-function generatePage() {
-    const title = document.getElementById('title').value;
-    const responsible = document.getElementById('responsible').value;
-    const date = document.getElementById('date').value;
+    function generatePage() {
+        const title = document.getElementById('title').value;
+        const responsible = document.getElementById('responsible').value;
+        const date = document.getElementById('date').value;
 
-    if (!title || !responsible || !date) {
-        alert("Por favor, preencha todas as informações!");
-        return;
-    }
-
-    document.getElementById('header-title').textContent = "Título: " + title;
-    document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-    document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
-
-    document.getElementById('generated-page').style.display = "block";
-}
-
-function addSection() {
-    const content = document.getElementById('content');
-
-    const section = document.createElement('div');
-    section.classList.add('section');
-
-    const sectionTitle = document.createElement('input');
-    sectionTitle.placeholder = 'Título da Sessão';
-    sectionTitle.classList.add('section-title');
-    section.appendChild(sectionTitle);
-
-    const sectionContent = document.createElement('div');
-    sectionContent.classList.add('section-content');
-
-    const column1 = document.createElement('div');
-    column1.classList.add('section-column');
-    column1.setAttribute('id', 'column1');
-    sectionContent.appendChild(column1);
-
-    const column2 = document.createElement('div');
-    column2.classList.add('section-column');
-    column2.setAttribute('id', 'column2');
-    sectionContent.appendChild(column2);
-
-    section.appendChild(sectionContent);
-
-    content.appendChild(section);
-    currentSection = section;
-    imageIndex = 0; // Resetar o índice das imagens a cada nova seção
-}
-
-function addText() {
-    const column2 = currentSection.querySelector('#column2');
-    const textBox = document.createElement('div');
-    textBox.classList.add('text-box');
-    textBox.contentEditable = "true";
-    column2.appendChild(textBox);
-
-    // Alinhar o texto com a última imagem inserida
-    alignTextWithImage();
-}
-
-function addImage() {
-    const column1 = currentSection.querySelector('#column1');
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = () => {
-        const file = input.files[0];
-        if (file) {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-            img.onclick = () => enlargeImage(img);
-            column1.appendChild(img);
-
-            // Incrementar o índice da imagem após a inserção
-            imageIndex++;
+        if (!title || !responsible || !date) {
+            alert("Por favor, preencha todas as informações!");
+            return;
         }
-    };
-    input.click();
-}
 
-function enlargeImage(img) {
-    const modal = document.createElement('div');
-    modal.style.position = 'fixed';
-    modal.style.top = '0';
-    modal.style.left = '0';
-    modal.style.width = '100%';
-    modal.style.height = '100%';
-    modal.style.background = 'rgba(0, 0, 0, 0.8)';
-    modal.style.zIndex = '1000';
-    modal.style.display = 'flex';
-    modal.style.alignItems = 'center';
-    modal.style.justifyContent = 'center';
+        document.getElementById('header-title').textContent = "Título: " + title;
+        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
+        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
 
-    const modalImg = document.createElement('img');
-    modalImg.src = img.src;
-    modalImg.style.maxWidth = '90%';
-    modalImg.style.maxHeight = '90%';
-    modal.appendChild(modalImg);
-
-    const closeButton = document.createElement('button');
-    closeButton.textContent = 'Fechar';
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '20px';
-    closeButton.style.right = '20px';
-    closeButton.style.backgroundColor = 'red';
-    closeButton.style.color = 'white';
-    closeButton.style.border = 'none';
-    closeButton.style.padding = '10px';
-    closeButton.style.cursor = 'pointer';
-    closeButton.onclick = () => {
-        document.body.removeChild(modal);
-    };
-
-    modal.appendChild(closeButton);
-    document.body.appendChild(modal);
-}
-
-function addArrow() {
-    const column1 = currentSection.querySelector('#column1');
-    const arrow = document.createElement('div');
-    arrow.classList.add('arrow');
-    arrow.style.height = '1px';
-    arrow.style.width = '50px';
-    column1.appendChild(arrow);
-}
-
-function startTimer() {
-    const startButton = document.querySelector('button[onclick="startTimer()"]');
-    if (startButton.textContent === "Iniciar Cronômetro") {
-        startButton.textContent = "Parar Cronômetro";
-        startTime = Date.now();
-        timerInterval = setInterval(updateTimer, 1000);
-    } else {
-        clearInterval(timerInterval);
-        startButton.textContent = "Iniciar Cronômetro";
-    }
-}
-
-function updateTimer() {
-    const elapsed = Date.now() - startTime;
-    const minutes = Math.floor(elapsed / 60000);
-    const seconds = Math.floor((elapsed % 60000) / 1000);
-    const timerDisplay = document.getElementById('timer');
-    timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
-}
-
-function openTrainingModal() {
-    document.getElementById('trainingModal').style.display = 'flex';
-    startTimer();
-}
-
-function closeTrainingModal() {
-    document.getElementById('trainingModal').style.display = 'none';
-    clearInterval(timerInterval);
-}
-
-function saveTraining() {
-    // Captura o valor atual do cronômetro antes da validação
-    const timerDisplay = document.getElementById('timer');
-    const trainingTime = timerDisplay.textContent;
-
-    // Captura os valores do modal
-    const trainingTitle = document.getElementById('trainingTitle').value;
-    const trainer = document.getElementById('trainer').value;
-    const shift = document.getElementById('shift').value;
-    const sector = document.getElementById('sector').value;
-    const signature = document.getElementById('signature').value;
-
-    // Verifica se todos os campos estão preenchidos
-    if (!trainingTitle || !trainer || !shift || !sector || !signature || !trainingTime || trainingTime === "00:00") {
-        alert("Por favor, preencha todos os campos do treinamento e inicie o cronômetro.");
-        return;
+        document.getElementById('generated-page').style.display = "block";
     }
 
-    // Simula o salvamento dos dados
-    alert(`Treinamento salvo com sucesso!\n
-        Título: ${trainingTitle}\n
-        Treinador: ${trainer}\n
-        Turno: ${shift}\n
-        Setor: ${sector}\n
-        Assinatura: ${signature}\n
-        Duração: ${trainingTime}`);
-    
-    // Fecha o modal e reseta o cronômetro
-    closeTrainingModal();
-}
+    function addSection() {
+        const content = document.getElementById('content');
+        const section = document.createElement('div');
+        section.classList.add('section');
+        const sectionTitle = document.createElement('input');
+        sectionTitle.classList.add('section-title');
+        sectionTitle.placeholder = "Título da Seção";
+        section.appendChild(sectionTitle);
+        content.appendChild(section);
+    }
 
+    function addText() {
+        const content = document.getElementById('content');
+        const sectionColumn = document.createElement('div');
+        sectionColumn.classList.add('section-column');
+        const textBox = document.createElement('textarea');
+        textBox.classList.add('text-box');
+        sectionColumn.appendChild(textBox);
+        content.appendChild(sectionColumn);
+    }
+
+    function addImage() {
+        const content = document.getElementById('content');
+        const sectionColumn = document.createElement('div');
+        sectionColumn.classList.add('section-column');
+        const image = document.createElement('img');
+        image.src = 'https://via.placeholder.com/150';
+        image.alt = "Imagem Exemplo";
+        sectionColumn.appendChild(image);
+        content.appendChild(sectionColumn);
+    }
+
+    function addArrow() {
+        const content = document.getElementById('content');
+        const arrow = document.createElement('div');
+        arrow.classList.add('arrow');
+        content.appendChild(arrow);
+    }
+
+    function openTrainingModal() {
+        document.getElementById('trainingModal').style.display = 'flex';
+    }
+
+    function closeTrainingModal() {
+        document.getElementById('trainingModal').style.display = 'none';
+    }
+
+    function startTimer() {
+        if (!isTimerRunning) {
+            isTimerRunning = true;
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+    }
+
+    function updateTimer() {
+        seconds++;
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+    }
+
+    function saveTraining() {
+        const trainingTitle = document.getElementById('trainingTitle').value;
+        const trainer = document.getElementById('trainer').value;
+        const shift = document.getElementById('shift').value;
+        const sector = document.getElementById('sector').value;
+        const signature = document.getElementById('signature').value;
+        const trainingTime = document.getElementById('timer').textContent;
+
+        if (!trainingTitle || !trainer || !shift || !sector || !signature || trainingTime === "00:00") {
+            alert("Por favor, preencha todos os campos do treinamento e inicie o cronômetro.");
+            return;
+        }
+
+        const table = document.getElementById('trainingTable').getElementsByTagName('tbody')[0];
+        const newRow = table.insertRow();
+
+        newRow.insertCell(0).textContent = trainingTitle;
+        newRow.insertCell(1).textContent = trainer;
+        newRow.insertCell(2).textContent = shift;
+        newRow.insertCell(3).textContent = sector;
+        newRow.insertCell(4).textContent = signature;
+        newRow.insertCell(5).textContent = trainingTime;
+        newRow.insertCell(6).innerHTML = `<button onclick="downloadCSV()">Baixar CSV</button>`;
+
+        closeTrainingModal();
+    }
+
+    function downloadCSV() {
+        const table = document.getElementById('trainingTable');
+        let csvContent = '';
+        
+        for (let row of table.rows) {
+            let rowData = [];
+            for (let cell of row.cells) {
+                rowData.push(cell.textContent);
+            }
+            csvContent += rowData.join(',') + '\n';
+        }
+
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'treinamentos.csv';
+        link.click();
+    }
 </script>
+
 </body>
 </html>
