@@ -3,403 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Página</title>
+    <title>Aplicação</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-    <style>
-
+    <style> 
     body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
-header {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px;
-    text-align: center;
-}
-
-.container {
-    max-width: 800px;
-    margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    background: #f9f9f9;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-.form-group label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-.form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-#generated-page {
-    display: none;
-    margin: 20px auto;
-    width: 210mm;
-    height: 297mm;
-    background: white;
+#a4 {
+    width: 21cm;
+    height: 29.7cm;
+    margin: auto;
     border: 1px solid #000;
-    padding: 20px;
     position: relative;
-    overflow: hidden;
 }
 
-.button-container {
-    display: flex;
-    justify-content: center;
-    margin-top: 10px;
+#page-buttons {
+    margin-bottom: 10px;
 }
 
-.button-container button {
-    background: none;
-    border: 1px dashed #aaa;
-    padding: 5px 10px;
-    cursor: pointer;
-    color: #555;
+#page-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
 }
 
-.button-container button:hover {
-    background: #ddd;
-}
-
-.button-container button:active {
-    background: #bbb;
+.hidden {
+    display: none;
 }
 
 .popup {
-    display: none;
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.popup-content {
-    background: white;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     padding: 20px;
-    border-radius: 5px;
-    width: 400px;
-    display: flex;
-    flex-direction: column;
-}
-
-.popup-timer {
-    margin-top: 10px;
-}
-
-#training-signature {
     border: 1px solid #ccc;
-    margin-bottom: 10px;
+    background: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
 }
 
-#download-section {
-    margin-top: 20px;
-}
-
-#training-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-#training-table th, #training-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-#training-table th {
-    background-color: #f3f3f3;
-}
-
-/* Estilo para as seções */
-.section {
-    margin-bottom: 20px;
-    border: 1px dashed #ccc;
-    padding: 10px;
-}
-
-.section-title {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-}
-
-.section-content {
-    margin-top: 10px;
-}
-
-/* Estilo para a imagem dentro de um quadrado invisível */
-.image-box {
-    width: 8cm;
-    height: 8cm;
-    overflow: hidden;
-    display: inline-block;
-    position: relative;
-}
-
-.image-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
- 
     </style>
 <body>
-<header>
-<h1>Gerador de Página</h1>
-</header>
-
-<div class="container">
-    <div class="form-group">
-        <label for="title">Título:</label>
-        <input type="text" id="title" placeholder="Digite o título">
-    </div>
-
-    <div class="form-group">
-        <label for="responsible">Responsável:</label>
-        <input type="text" id="responsible" placeholder="Digite o responsável">
-    </div>
-
-    <div class="form-group">
-        <label for="date">Data:</label>
-        <input type="date" id="date">
-    </div>
-
-    <button onclick="generatePage()">Gerar Página</button>
-</div>
-
-<div id="generated-page">
-    <div class="header-info">
-        <div id="header-title"></div>
-        <div id="header-responsible"></div>
-        <div id="header-date"></div>
-    </div>
-    <div id="content"></div>
-</div>
-
-<div class="button-container">
-    <button onclick="addSection()">Adicionar Sessão</button>
-    <button onclick="addText()">Adicionar Texto</button>
-    <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="openTrainingPopup()">Inserir Treinamento</button>
-</div>
-
-<div id="training-popup" class="popup">
-    <div class="popup-content">
-        <h3>Inserir Treinamento</h3>
-        <label for="training-title">Título:</label>
-        <input type="text" id="training-title" placeholder="Título do treinamento">
-        <label for="training-location">Local:</label>
-        <input type="text" id="training-location" placeholder="Local do treinamento">
-        <label for="training-sector">Setor:</label>
-        <input type="text" id="training-sector" placeholder="Setor">
-        <label for="training-instructor">Ministrante:</label>
-        <input type="text" id="training-instructor" placeholder="Ministrante">
-        <label for="training-signature">Assinatura:</label>
-        <canvas id="training-signature" width="300" height="100"></canvas>
-        <div class="popup-timer">
-            <span id="timer">00:00</span>
+    <!-- Primeira Parte -->
+    <section id="config-section">
+        <h2>Configurações</h2>
+        <div>
+            <label for="footer-info">Informações do Rodapé:</label>
+            <textarea id="footer-info" placeholder="Digite informações para o rodapé..."></textarea>
         </div>
-        <button onclick="startStopTimer()">Iniciar/Parar Cronômetro</button>
-        <button onclick="saveTraining()">Salvar</button>
-        <button onclick="closeTrainingPopup()">Cancelar</button>
+        <div id="timer">
+            <span id="time-display">00:00:00</span>
+            <button id="start-timer">Iniciar</button>
+            <button id="stop-timer">Parar</button>
+        </div>
+    </section>
+
+    <!-- Segunda Parte -->
+    <section id="page-section">
+        <div id="page-buttons">
+            <button id="add-session">Inserir Sessão</button>
+            <button id="add-image">Inserir Imagem</button>
+            <button id="add-text">Inserir Texto</button>
+            <button id="add-shape">Inserir Forma</button>
+            <button id="add-training">Inserir Treinamento</button>
+        </div>
+        <div id="page" class="a4">
+            <footer id="page-footer"></footer>
+        </div>
+    </section>
+
+    <!-- Pop-up para Treinamento -->
+    <div id="training-popup" class="popup hidden">
+        <h3>Inserir Treinamento</h3>
+        <label>IT: <input type="text" id="it"></label>
+        <label>Local: <input type="text" id="local"></label>
+        <label>Setor: <input type="text" id="setor"></label>
+        <label>Ministrante: <input type="text" id="ministrante"></label>
+        <label>Assinatura: <input type="text" id="assinatura"></label>
+        <label>Tempo: <input type="text" id="time"></label>
+        <button id="close-popup">Fechar</button>
     </div>
-</div>
 
-<div id="download-section">
-    <button onclick="downloadCSV()">Baixar CSV</button>
-    <table id="training-table">
-        <thead>
-            <tr>
-                <th>Título</th>
-                <th>Local</th>
-                <th>Setor</th>
-                <th>Ministrante</th>
-                <th>Assinatura</th>
-                <th>Tempo</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
+    <script src="scripts.js"></script>
+    <script>
 
-<script src="script.js"
-    
-  let trainingData = [];
-let timerInterval;
-let timeElapsed = 0;
-let isTimerRunning = false;
+        document.addEventListener("DOMContentLoaded", () => {
+    const footerInfo = document.getElementById("footer-info");
+    const pageFooter = document.getElementById("page-footer");
+    const startTimer = document.getElementById("start-timer");
+    const stopTimer = document.getElementById("stop-timer");
+    const timeDisplay = document.getElementById("time-display");
+    const addSession = document.getElementById("add-session");
+    const trainingPopup = document.getElementById("training-popup");
+    const closePopup = document.getElementById("close-popup");
 
-function generatePage() {
-    const title = document.getElementById('title').value;
-    const responsible = document.getElementById('responsible').value;
-    const date = document.getElementById('date').value;
+    let timerInterval;
+    let seconds = 0;
 
-    if (!title || !responsible || !date) {
-        alert("Por favor, preencha todas as informações!");
-        return;
+    function formatTime(s) {
+        const hrs = String(Math.floor(s / 3600)).padStart(2, "0");
+        const mins = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+        const secs = String(s % 60).padStart(2, "0");
+        return `${hrs}:${mins}:${secs}`;
     }
 
-    document.getElementById('header-title').textContent = "Título: " + title;
-    document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-    document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
-
-    document.getElementById('generated-page').style.display = "block";
-}
-
-function addSection() {
-    const content = document.getElementById('content');
-    const section = document.createElement('div');
-    section.classList.add('section');
-    
-    const sectionTitle = document.createElement('input');
-    sectionTitle.placeholder = 'Título da Sessão';
-    sectionTitle.classList.add('section-title');
-    section.appendChild(sectionTitle);
-
-    const sectionContent = document.createElement('div');
-    sectionContent.classList.add('section-content');
-    section.appendChild(sectionContent);
-    content.appendChild(section);
-}
-
-function addText() {
-    const section = document.querySelector('.section');
-    const textBox = document.createElement('div');
-    textBox.classList.add('text-box');
-    section.appendChild(textBox);
-}
-
-function addImage() {
-    const section = document.querySelector('.section');
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-        const file = input.files[0];
-        if (file) {
-            const img = document.createElement('img');
-            img.src = URL.createObjectURL(file);
-
-            const imageBox = document.createElement('div');
-            imageBox.classList.add('image-box');
-            imageBox.appendChild(img);
-            section.appendChild(imageBox);
-        }
-    };
-    input.click();
-}
-
-function openTrainingPopup() {
-    document.getElementById('training-popup').style.display = 'flex';
-    startTimer();
-}
-
-function closeTrainingPopup() {
-    document.getElementById('training-popup').style.display = 'none';
-    clearInterval(timerInterval);
-}
-
-function startStopTimer() {
-    if (isTimerRunning) {
-        clearInterval(timerInterval);
-    } else {
-        startTimer();
-    }
-    isTimerRunning = !isTimerRunning;
-}
-
-function startTimer() {
-    timerInterval = setInterval(() => {
-        timeElapsed++;
-        const minutes = Math.floor(timeElapsed / 60);
-        const seconds = timeElapsed % 60;
-        document.getElementById('timer').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    }, 1000);
-}
-
-function saveTraining() {
-    const title = document.getElementById('training-title').value;
-    const location = document.getElementById('training-location').value;
-    const sector = document.getElementById('training-sector').value;
-    const instructor = document.getElementById('training-instructor').value;
-    const signatureCanvas = document.getElementById('training-signature');
-    const signatureData = signatureCanvas.toDataURL();
-
-    if (title && location && sector && instructor) {
-        trainingData.push({
-            title,
-            location,
-            sector,
-            instructor,
-            signature: signatureData,
-            time: document.getElementById('timer').textContent,
-        });
-
-        updateTrainingTable();
-        closeTrainingPopup();
-    } else {
-        alert("Por favor, preencha todos os campos!");
-    }
-}
-
-function updateTrainingTable() {
-    const tableBody = document.querySelector('#training-table tbody');
-    tableBody.innerHTML = '';
-    trainingData.forEach(training => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${training.title}</td>
-            <td>${training.location}</td>
-            <td>${training.sector}</td>
-            <td>${training.instructor}</td>
-            <td><img src="${training.signature}" alt="Assinatura" width="50" height="50"></td>
-            <td>${training.time}</td>
-        `;
-        tableBody.appendChild(row);
+    footerInfo.addEventListener("input", () => {
+        pageFooter.textContent = footerInfo.value;
     });
-}
 
-function downloadCSV() {
-    const csvContent = [
-        ["Título", "Local", "Setor", "Ministrante", "Assinatura", "Tempo"],
-        ...trainingData.map(t => [
-            t.title, 
-            t.location, 
-            t.sector, 
-            t.instructor, 
-            t.signature, 
-            t.time
-        ])
-    ]
-    .map(e => e.join(","))
-    .join("\n");
+    startTimer.addEventListener("click", () => {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            seconds++;
+            timeDisplay.textContent = formatTime(seconds);
+        }, 1000);
+    });
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "treinamentos.csv";
-    link.click();
-}
-</script>
+    stopTimer.addEventListener("click", () => {
+        clearInterval(timerInterval);
+    });
+
+    addSession.addEventListener("click", () => {
+        const session = document.createElement("div");
+        session.innerHTML = `
+            <h4>Sessão</h4>
+            <div style="display: flex; gap: 10px;">
+                <div style="width: 8cm; height: 8cm; border: 1px solid #ccc;">Imagens</div>
+                <textarea style="flex: 1;" placeholder="Insira textos..."></textarea>
+            </div>
+        `;
+        document.getElementById("page").appendChild(session);
+    });
+
+    closePopup.addEventListener("click", () => {
+        trainingPopup.classList.add("hidden");
+    });
+
+    document.getElementById("add-training").addEventListener("click", () => {
+        trainingPopup.classList.remove("hidden");
+    });
+});
+
+    </script>
 </body>
 </html>
