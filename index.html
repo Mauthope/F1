@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,23 +28,6 @@
             background: #f9f9f9;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
         #generated-page {
             display: none;
             margin: 20px auto;
@@ -56,48 +40,7 @@
             overflow: hidden;
         }
 
-        .header-info {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-
-        .section {
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px dashed #aaa;
-            background: #f3f3f3;
-            position: relative;
-        }
-
-        .section-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-align: center;
-            background: #f3f3f3;
-            width: 100%;
-            border: none;
-        }
-
-        .section-content {
-            display: flex;
-            gap: 10px;
-        }
-
-        .section-column {
-            flex: 1;
-            min-width: 100px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .section-column img,
-        .section-column video {
+        .section-column img {
             max-width: 8cm;
             max-height: 8cm;
             object-fit: contain;
@@ -105,209 +48,156 @@
             cursor: pointer;
         }
 
-        .text-box {
+        #training-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        #training-popup input {
             width: 100%;
-            max-width: 8cm;
-            min-height: 50px;
-            border: 1px dashed #ccc;
-            padding: 5px;
-            resize: vertical;
-            word-wrap: break-word;
-            overflow: hidden;
-            white-space: pre-wrap;
-            box-sizing: border-box;
-            display: inline-block;
+            margin-bottom: 10px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
-        .button-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 10px;
+        #signature-canvas {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
         }
 
-        .button-container button {
-            background: none;
-            border: 1px dashed #aaa;
-            padding: 5px 10px;
-            cursor: pointer;
-            color: #555;
+        #training-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
         }
 
-        .button-container button:hover {
-            background: #ddd;
+        #training-table th,
+        #training-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
         }
 
-        .button-container button:active {
-            background: #bbb;
-        }
-
-        .arrow {
-            position: absolute;
-            width: 2px;
-            background: black;
-            z-index: 10;
-        }
-
-        @media print {
-            button {
-                display: none !important;
-            }
-
-            #generated-page {
-                border: none;
-            }
+        #training-table th {
+            background: #f4f4f4;
         }
     </style>
 </head>
+
 <body>
-<header>
-    <h1>Gerador de Página</h1>
-</header>
+    <header>
+        <h1>Gerador de Página</h1>
+    </header>
 
-<div class="container">
-    <div class="form-group">
-        <label for="title">Título:</label>
-        <input type="text" id="title" placeholder="Digite o título">
+    <div class="container">
+        <button onclick="openTrainingPopup()">Inserir Treinamento</button>
+        <button onclick="downloadCSV()">Baixar CSV</button>
     </div>
 
-    <div class="form-group">
-        <label for="responsible">Responsável:</label>
-        <input type="text" id="responsible" placeholder="Digite o responsável">
+    <div id="generated-page">
+        <div id="content"></div>
     </div>
 
-    <div class="form-group">
-        <label for="date">Data:</label>
-        <input type="date" id="date">
+    <div id="training-popup">
+        <h3>Inserir Treinamento</h3>
+        <input type="text" id="training-title" placeholder="Título">
+        <input type="text" id="training-location" placeholder="Local">
+        <input type="text" id="training-department" placeholder="Setor">
+        <input type="text" id="training-presenter" placeholder="Ministrante">
+        <canvas id="signature-canvas" width="300" height="100"></canvas>
+        <button onclick="saveTraining()">Salvar</button>
+        <button onclick="closeTrainingPopup()">Cancelar</button>
     </div>
 
-    <button onclick="generatePage()">Gerar Página</button>
-</div>
+    <table id="training-table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Local</th>
+                <th>Setor</th>
+                <th>Ministrante</th>
+                <th>Tempo</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
 
-<div id="generated-page">
-    <div class="header-info">
-        <div id="header-title"></div>
-        <div id="header-responsible"></div>
-        <div id="header-date"></div>
-    </div>
-    <div id="content"></div>
-</div>
+    <script>
+        let trainingStartTime;
+        const signatureCanvas = document.getElementById('signature-canvas');
+        const signatureCtx = signatureCanvas.getContext('2d');
+        let isDrawing = false;
 
-<div class="button-container">
-    <button onclick="addSection()">Adicionar Sessão</button>
-    <button onclick="addText()">Adicionar Texto</button>
-    <button onclick="addImage()">Adicionar Imagem</button>
-    <button onclick="addArrow()">Adicionar Seta</button>
-</div>
+        signatureCanvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            signatureCtx.moveTo(e.offsetX, e.offsetY);
+        });
 
-<script>
-    let startArrow = null;
-    let isDrawingArrow = false;
-    let currentSection = null;
-    let point1 = null;
+        signatureCanvas.addEventListener('mousemove', (e) => {
+            if (isDrawing) {
+                signatureCtx.lineTo(e.offsetX, e.offsetY);
+                signatureCtx.stroke();
+            }
+        });
 
-    function generatePage() {
-        const title = document.getElementById('title').value;
-        const responsible = document.getElementById('responsible').value;
-        const date = document.getElementById('date').value;
+        signatureCanvas.addEventListener('mouseup', () => {
+            isDrawing = false;
+        });
 
-        if (!title || !responsible || !date) {
-            alert("Por favor, preencha todas as informações!");
-            return;
+        function openTrainingPopup() {
+            trainingStartTime = Date.now();
+            document.getElementById('training-popup').style.display = 'block';
         }
 
-        document.getElementById('header-title').textContent = "Título: " + title;
-        document.getElementById('header-responsible').textContent = "Responsável: " + responsible;
-        document.getElementById('header-date').textContent = "Data: " + new Date(date).toLocaleDateString();
+        function closeTrainingPopup() {
+            document.getElementById('training-popup').style.display = 'none';
+        }
 
-        document.getElementById('generated-page').style.display = "block";
-    }
+        function saveTraining() {
+            const title = document.getElementById('training-title').value;
+            const location = document.getElementById('training-location').value;
+            const department = document.getElementById('training-department').value;
+            const presenter = document.getElementById('training-presenter').value;
+            const elapsedTime = ((Date.now() - trainingStartTime) / 1000).toFixed(2);
 
-    function addSection() {
-        const content = document.getElementById('content');
+            const tableBody = document.getElementById('training-table').querySelector('tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${title}</td>
+                <td>${location}</td>
+                <td>${department}</td>
+                <td>${presenter}</td>
+                <td>${elapsedTime}s</td>
+            `;
+            tableBody.appendChild(row);
 
-        const section = document.createElement('div');
-        section.classList.add('section');
+            closeTrainingPopup();
+        }
 
-        const sectionTitle = document.createElement('input');
-        sectionTitle.placeholder = 'Título da Sessão';
-        sectionTitle.classList.add('section-title');
-        section.appendChild(sectionTitle);
+        function downloadCSV() {
+            const rows = Array.from(document.querySelectorAll('#training-table tr'));
+            const csvContent = rows.map(row => {
+                return Array.from(row.querySelectorAll('th, td')).map(cell => cell.textContent).join(',');
+            }).join('\n');
 
-        const sectionContent = document.createElement('div');
-        sectionContent.classList.add('section-content');
-
-        const column1 = document.createElement('div');
-        column1.classList.add('section-column');
-        column1.setAttribute('id', 'column1');
-        sectionContent.appendChild(column1);
-
-        const column2 = document.createElement('div');
-        column2.classList.add('section-column');
-        column2.setAttribute('id', 'column2');
-        sectionContent.appendChild(column2);
-
-        section.appendChild(sectionContent);
-
-        content.appendChild(section);
-        currentSection = section;
-    }
-
-    function addText() {
-        const column2 = currentSection.querySelector('#column2');
-        const textBox = document.createElement('div');
-        textBox.classList.add('text-box');
-        textBox.contentEditable = "true";
-        column2.appendChild(textBox);
-    }
-
-    function addImage() {
-        const column1 = currentSection.querySelector('#column1');
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.onchange = () => {
-            const file = input.files[0];
-            if (file) {
-                const img = document.createElement('img');
-                img.src = URL.createObjectURL(file);
-                img.onclick = () => img.remove(); // Delete image on click
-                column1.appendChild(img);
-            }
-        };
-        input.click();
-    }
-
-    function addArrow() {
-        const section = currentSection;
-        section.onmousedown = (e) => {
-            if (!point1) {
-                point1 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-            } else {
-                const point2 = { x: e.clientX - section.getBoundingClientRect().left, y: e.clientY - section.getBoundingClientRect().top };
-                drawArrow(point1.x, point1.y, point2.x, point2.y);
-                point1 = null; // Reset after drawing
-            }
-        };
-    }
-
-    function drawArrow(startX, startY, endX, endY) {
-        const section = currentSection;
-        const arrow = document.createElement('div');
-        arrow.classList.add('arrow');
-
-        const dx = endX - startX;
-        const dy = endY - startY;
-
-        const angle = Math.atan2(dy, dx);
-        const length = Math.sqrt(dx * dx + dy * dy);
-
-        arrow.style.height = `${length}px`;
-        arrow.style.transform = `rotate(${angle}rad)`;
-        arrow.style.top = `${startY}px`;
-        arrow.style.left = `${startX}px`;
-
-        section.appendChild(arrow);
-    }
-</script>
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'treinamentos.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
 </body>
+
 </html>
