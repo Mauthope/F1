@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    <title>Shared Page</title>
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <style>
         body {
@@ -38,16 +38,9 @@
         <button onclick="login('atendente')">Atendente</button>
     </div>
 
-    <div id="solicitante-container" class="hidden">
-        <h2>Solicitante</h2>
+    <div id="main-container" class="hidden">
+        <h2 id="role-title"></h2>
         <div id="buttons-container">
-            <!-- Buttons will be dynamically added here -->
-        </div>
-    </div>
-
-    <div id="atendente-container" class="hidden">
-        <h2>Atendente</h2>
-        <div id="buttons-container-atendente">
             <!-- Buttons will be dynamically added here -->
         </div>
     </div>
@@ -56,26 +49,26 @@
         const socket = io('http://localhost:3000');
 
         const loginContainer = document.getElementById('login-container');
-        const solicitanteContainer = document.getElementById('solicitante-container');
-        const atendenteContainer = document.getElementById('atendente-container');
+        const mainContainer = document.getElementById('main-container');
+        const roleTitle = document.getElementById('role-title');
         const buttonsContainer = document.getElementById('buttons-container');
-        const buttonsContainerAtendente = document.getElementById('buttons-container-atendente');
 
         let role = '';
 
         function login(userRole) {
             role = userRole;
             loginContainer.classList.add('hidden');
+            mainContainer.classList.remove('hidden');
+            roleTitle.textContent = role === 'solicitante' ? 'Solicitante' : 'Atendente';
 
             if (role === 'solicitante') {
-                solicitanteContainer.classList.remove('hidden');
-                createSolicitanteButtons();
+                createButtonsForSolicitante();
             } else if (role === 'atendente') {
-                atendenteContainer.classList.remove('hidden');
+                socket.emit('requestButtons');
             }
         }
 
-        function createSolicitanteButtons() {
+        function createButtonsForSolicitante() {
             for (let i = 0; i < 10; i++) {
                 const button = document.createElement('button');
                 button.className = 'button';
@@ -97,23 +90,24 @@
         }
 
         socket.on('updateStatus', ({ index, status }) => {
-            if (role === 'atendente') {
-                let button = buttonsContainerAtendente.children[index];
-                if (!button) {
-                    button = document.createElement('button');
-                    button.className = 'button';
-                    button.textContent = `Botão ${index + 1}`;
-                    button.onclick = () => openAtendentePopup(index);
-                    buttonsContainerAtendente.appendChild(button);
-                }
-                button.className = `button ${status}`;
+            let button = buttonsContainer.children[index];
+            if (!button) {
+                button = document.createElement('button');
+                button.className = 'button';
+                button.textContent = `Botão ${index + 1}`;
+                buttonsContainer.appendChild(button);
+            }
+            button.className = `button ${status}`;
+
+            if (role === 'atendente' && status === 'in-progress') {
+                button.onclick = () => openAtendentePopup(index);
             }
         });
 
         function openAtendentePopup(index) {
             const confirm = window.confirm('Deseja atender?');
             if (confirm) {
-                const button = buttonsContainerAtendente.children[index];
+                const button = buttonsContainer.children[index];
                 button.className = 'button attending';
                 startTimer(button);
                 socket.emit('updateStatus', { index, status: 'attending' });
@@ -130,22 +124,12 @@
             button.dataset.timer = timer;
         }
 
-        if (role === 'solicitante') {
-            socket.on('finalize', (index) => {
-                const button = buttonsContainer.children[index];
-                button.className = 'button';
-                button.textContent = `Botão ${index + 1}`;
-            });
-        }
-
-        if (role === 'atendente') {
-            socket.on('finalize', (index) => {
-                const button = buttonsContainerAtendente.children[index];
-                clearInterval(button.dataset.timer);
-                button.className = 'button';
-                button.textContent = `Botão ${index + 1}`;
-            });
-        }
+        socket.on('finalize', (index) => {
+            const button = buttonsContainer.children[index];
+            clearInterval(button.dataset.timer);
+            button.className = 'button';
+            button.textContent = `Botão ${index + 1}`;
+        });
 
         function finalize(index) {
             socket.emit('finalize', index);
